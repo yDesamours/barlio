@@ -1,0 +1,15 @@
+{{define "header"}}
+<header>
+    <div>
+        <img src="statics/assets/img/scc.png">
+    </div>
+    <nav>
+        <h2>BARLIO</h2>
+        <div><a href="#">Latest</a></div>
+        <div><a href="#">Tag</a></div>
+        {{if .}}
+            <div><a href="#">Pinned</a></div>
+        {{end}}
+    </nav>
+</header>
+{{end}}
