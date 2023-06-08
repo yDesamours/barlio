@@ -16,7 +16,7 @@ const (
 
 type templateData map[string]interface{}
 
-func newTemplateData() templateData {
+func (app *App) newTemplateData() templateData {
 	return templateData{
 		"time": time.Now(),
 	}

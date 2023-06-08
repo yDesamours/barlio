@@ -1,15 +1,16 @@
 package main
 
 import (
+	"barlio/internal/validator"
 	"barlio/ui"
 	"net/http"
 	"path/filepath"
 	"text/template"
 )
 
-func (app *App) home() http.HandlerFunc {
+func (app *App) homeHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data := newTemplateData()
+		data := app.newTemplateData()
 		data.Set("page", "Home")
 
 		tmpl := app.Templates["home"]
@@ -20,9 +21,9 @@ func (app *App) home() http.HandlerFunc {
 	}
 }
 
-func (app *App) signinPage() http.HandlerFunc {
+func (app *App) signinPageHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data := newTemplateData()
+		data := app.newTemplateData()
 		data.Set("page", "Signin")
 
 		tmpl := app.Templates["signin"]
@@ -33,9 +34,34 @@ func (app *App) signinPage() http.HandlerFunc {
 	}
 }
 
-func (app *App) signupPage() http.HandlerFunc {
+func (app *App) signinHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data := newTemplateData()
+		r.ParseForm()
+		form := r.PostForm
+		data := app.newTemplateData()
+
+		validator := &validator.Validator{}
+		app.validateSignFormHandler(form, validator)
+		if !validator.Valid() {
+			signinErrors := validator.Error()
+			data.Set("errors", signinErrors)
+			data.Set("signin", map[string]interface{}{"username": form.Get("username"), "email": form.Get("email")})
+			data.Set("page", "Signin")
+
+			tmpl := app.Templates["signin"]
+			err := tmpl.Execute(w, data)
+			if err != nil {
+				app.error(err)
+			}
+
+		}
+
+	}
+}
+
+func (app *App) signupPageHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		data := app.newTemplateData()
 		data.Set("page", "Signup")
 
 		tmpl := app.Templates["signup"]
