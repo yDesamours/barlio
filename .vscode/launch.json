@@ -8,8 +8,7 @@
             "name": "Launch Package",
             "type": "go",
             "request": "launch",
-            "mode": "auto",
-            "program": "cmd/server/main.go"
+            "program": "c:/Users/User/code/go/src/barlio/cmd/server/main/"
         }
     ]
 }

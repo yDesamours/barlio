@@ -1,0 +1,36 @@
+{{define "title"}}sign in {{end}}
+
+{{define "main"}}
+<div class="mx-auto">
+    <form action="/signin" method="post">
+        <div>
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control {{if .errors.username}}is-invalid{{end}}" name="username" id="username" placeholder="your username">
+                <label for="username">Username</label>
+            </div>
+            {{with .errors.username}}<ul>{{range .}}<li class="form-text text-danger">{{.}}</li>{{end}}</ul>{{end}}
+        </div>
+        <div>
+            <div class="form-floating mb-3">
+                <input type="email" class="form-control {{if .errors.email}}is-invalid{{end}}" name="email" id="email" placeholder="Your email">
+                <label for="email">Email</label>
+            </div>
+            {{with .errors.email}}<ul>{{range .}}<li class="form-text text-danger">{{.}}</li>{{end}}</ul>{{end}}
+        </div>
+        <div>
+            <div class="form-floating mb-3">
+                <input type="password" class="form-control {{if .errors.password}}is-invalid{{end}}" name="password" id="password" placeholder="password">
+                <label for="password">Password</label>
+            </div>
+            {{with .errors.password}}<ul>{{range .}}<li class="form-text text-danger">{{.}}</li>{{end}}</ul>{{end}}
+        </div>
+        <div>
+            <div class="form-floating mb-3">
+                <input type="password" class="form-control {{if .errors.confirmpassord}}is-invalid{{end}}" name="passwordconfirm" id="passwordconfirm" placeholder="password confirm">
+                <label for="passwordconfirm">Confirm Password</label>
+            </div>
+            {{with .errors.username}}<ul>{{range .}}<li class="form-text text-danger">{{.}}</li>{{end}}</ul>{{end}}
+        </div>
+    </form>
+</div>
+{{end}}
