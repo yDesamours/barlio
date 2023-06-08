@@ -11,6 +11,7 @@ func (app *App) home() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		data := newTemplateData()
 		data.Set("page", "Home")
+
 		tmpl := app.Templates["home"]
 		err := tmpl.Execute(w, data)
 		if err != nil {
@@ -23,7 +24,21 @@ func (app *App) signinPage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		data := newTemplateData()
 		data.Set("page", "Signin")
+
 		tmpl := app.Templates["signin"]
+		err := tmpl.Execute(w, data)
+		if err != nil {
+			app.error(err)
+		}
+	}
+}
+
+func (app *App) signupPage() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		data := newTemplateData()
+		data.Set("page", "Signup")
+
+		tmpl := app.Templates["signup"]
 		err := tmpl.Execute(w, data)
 		if err != nil {
 			app.error(err)

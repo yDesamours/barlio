@@ -1,4 +1,4 @@
-{{define "title"}}sign in {{end}}
+{{define "title"}}sign up {{end}}
 
 {{define "main"}}
 <div class="row vh-100">
@@ -14,30 +14,16 @@
             </div>
             <div>
                 <div class="form-floating mb-3">
-                    <input type="email" class="form-control {{if .errors.email}}is-invalid{{end}}" name="email" id="email" placeholder="Your email">
-                    <label for="email">Email</label>
-                </div>
-                {{with .errors.email}}<ul>{{range .}}<li class="form-text text-danger">{{.}}</li>{{end}}</ul>{{end}}
-            </div>
-            <div>
-                <div class="form-floating mb-3">
                     <input type="password" class="form-control {{if .errors.password}}is-invalid{{end}}" name="password" id="password" placeholder="password">
                     <label for="password">Password</label>
                 </div>
                 {{with .errors.password}}<ul>{{range .}}<li class="form-text text-danger">{{.}}</li>{{end}}</ul>{{end}}
             </div>
             <div>
-                <div class="form-floating mb-3">
-                    <input type="password" class="form-control {{if .errors.confirmpassord}}is-invalid{{end}}" name="passwordconfirm" id="passwordconfirm" placeholder="password confirm">
-                    <label for="passwordconfirm">Confirm Password</label>
-                </div>
-                {{with .errors.username}}<ul>{{range .}}<li class="form-text text-danger">{{.}}</li>{{end}}</ul>{{end}}
-            </div>
-            <div>
                 <input type="submit" class="btn btn-primary" value="Sign in">
             </div>
         </form>
-        <div><span>Already have a account? <a class="link" role="button" href="/login">Sign up</a></span></div>
+        <div><span>Dont have an account? <a class="link" role="button" href="/signin">Sign up</a></span></div>
     </div>
 </div>
 {{end}}

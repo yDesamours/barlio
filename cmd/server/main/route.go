@@ -13,6 +13,7 @@ func newRouter(app *App) http.Handler {
 
 	router.HandlerFunc(http.MethodGet, "/home", app.home())
 	router.HandlerFunc(http.MethodGet, "/signin", app.signinPage())
+	router.HandlerFunc(http.MethodGet, "/login", app.signupPage())
 	router.Handler(http.MethodGet, "/statics/*path", app.fileServer())
 
 	staticMiddlewares := alice.New(app.recoverMiddleware)

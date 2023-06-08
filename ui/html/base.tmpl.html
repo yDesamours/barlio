@@ -12,9 +12,11 @@
 </head>
 <body>
     <div class="container-fluid">
+        {{if (and (not (eq .page "Signin")) (not (eq .page "Signup"))) }}
         <header>
             {{template "header" .}}
         </header>
+        {{end}}
     
         <main>
             {{template "main"}}
