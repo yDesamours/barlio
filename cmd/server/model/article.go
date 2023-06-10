@@ -13,22 +13,30 @@ import (
 )
 
 type Article struct {
-	ID        int               `json:"id"`
-	Subject   data.DataString   `json:"subject,omitempty"`
-	Tags      []data.DataString `json:"tags,omitempty"`
-	Title     data.DataString   `json:"title,omitempty"`
-	Content   data.DataString   `json:"content,omitempty"`
-	Gender    data.DataString   `json:"gender,omitempty"`
-	CreatedAt time.Time         `json:"created_at,omitempty"`
-	Author    User              `json:"author"`
+	ID         int                  `json:"id"`
+	Subject    data.String          `json:"subject,omitempty"`
+	Categories ListArticleCategorie `json:"categorie,omitempty"`
+	Title      data.String          `json:"title,omitempty"`
+	Content    data.String          `json:"content,omitempty"`
+	Gender     data.String          `json:"gender,omitempty"`
+	CreatedAt  time.Time            `json:"created_at,omitempty"`
+	Author     User                 `json:"author"`
+	Tags       []data.String        `json:"tags"`
 }
 
+type ArticleCategorie struct {
+	Id   int `json:"id"`
+	Name int `json:"name"`
+}
+
+type ListArticleCategorie []ArticleCategorie
+
 type ArticleSearch struct {
-	Subject    data.DataString
-	Tags       []data.DataString
-	Title      data.DataString
+	Subject    data.String
+	Tags       []data.String
+	Title      data.String
 	CreatedAt  time.Time
-	Author     data.DataString
+	Author     data.String
 	PageSize   int
 	PageNumber int
 }

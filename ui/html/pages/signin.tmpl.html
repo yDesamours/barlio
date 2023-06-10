@@ -7,14 +7,14 @@
         <form action="/signin" method="post">
             <div>
                 <div class="form-floating mb-3">
-                    <input type="text" class="form-control {{if .errors.username}}is-invalid{{end}}" name="username" id="username" placeholder="your username">
+                    <input type="text" class="form-control {{if .errors.username}}is-invalid{{end}}" name="username" id="username" value="{{with .signin}}{{.username}}{{else}}{{end}}" placeholder="your username">
                     <label for="username">Username</label>
                 </div>
                 {{with .errors.username}}<ul>{{range .}}<li class="form-text text-danger">{{.}}</li>{{end}}</ul>{{end}}
             </div>
             <div>
                 <div class="form-floating mb-3">
-                    <input type="email" class="form-control {{if .errors.email}}is-invalid{{end}}" name="email" id="email" placeholder="Your email">
+                    <input type="email" class="form-control {{if .errors.email}}is-invalid{{end}}" name="email" id="email" value="{{with .signin}}{{.email}}{{else}} {{end}}" placeholder="Your email">
                     <label for="email">Email</label>
                 </div>
                 {{with .errors.email}}<ul>{{range .}}<li class="form-text text-danger">{{.}}</li>{{end}}</ul>{{end}}
@@ -28,10 +28,10 @@
             </div>
             <div>
                 <div class="form-floating mb-3">
-                    <input type="password" class="form-control {{if .errors.confirmpassord}}is-invalid{{end}}" name="passwordconfirm" id="passwordconfirm" placeholder="password confirm">
+                    <input type="password" class="form-control {{if .errors.passwordconfirm}}is-invalid{{end}}" name="passwordconfirm" id="passwordconfirm" placeholder="password confirm">
                     <label for="passwordconfirm">Confirm Password</label>
                 </div>
-                {{with .errors.username}}<ul>{{range .}}<li class="form-text text-danger">{{.}}</li>{{end}}</ul>{{end}}
+                {{with .errors.passwordconfirm}}<ul>{{range .}}<li class="form-text text-danger">{{.}}</li>{{end}}</ul>{{end}}
             </div>
             <div>
                 <input type="submit" class="btn btn-primary" value="Sign in">

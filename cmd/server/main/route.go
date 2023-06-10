@@ -9,12 +9,12 @@ import (
 
 func newRouter(app *App) http.Handler {
 	router := httprouter.New()
-	router.NotFound = app.notFound()
+	router.NotFound = http.HandlerFunc(app.notFound)
 
-	router.HandlerFunc(http.MethodGet, "/home", app.homeHandler())
-	router.HandlerFunc(http.MethodGet, "/signin", app.signinPageHandler())
-	router.HandlerFunc(http.MethodGet, "/login", app.signupPageHandler())
-	router.HandlerFunc(http.MethodGet, "/login", app.signinHandler())
+	router.HandlerFunc(http.MethodGet, "/", app.homeHandler)
+	router.HandlerFunc(http.MethodGet, "/signin", app.signinPageHandler)
+	router.HandlerFunc(http.MethodGet, "/login", app.signupPageHandler)
+	router.HandlerFunc(http.MethodPost, "/signin", app.signinHandler)
 	router.Handler(http.MethodGet, "/statics/*path", app.fileServer())
 
 	staticMiddlewares := alice.New(app.recoverMiddleware)

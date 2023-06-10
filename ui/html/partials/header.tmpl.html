@@ -18,14 +18,14 @@
 
 {{define "nav"}}
 <div class="row">
-    <div class="col-10">
-        <nav class="nav nav-underline nav-justified justify-content-end ">
-            <a class="nav-link {{if eq .page `Home`}}active{{end}}" role="button">Home</a>
-            <a class="nav-link {{if eq .page `stories`}}Stories{{end}}" role="button">Stories</a>
-            <a class="nav-link link-dark{{if eq .page `Author`}}Author{{end}}" role="button">Author</a>
+    <div class="col-9">
+        <nav class="nav nav-underline justify-content-end ">
+            <a class="nav-link link-dark {{if eq .page `Home`}}active{{end}} px-1" role="button" href="/">Home</a>
+            <a class="nav-link link-dark {{if eq .page `Stories`}}active{{end}} px-1" role="button">Stories</a>
+            <a class="nav-link link-dark{{if eq .page `Author`}}active{{end}} px-1" role="button">Author</a>
         </nav>
     </div>
-    <div class="col-2">
+    <div class="col-3">
         {{if .user}}User
         {{else}}<a class="btn btn-primary rounded-pill" href="/signin">Sign In</a>
         {{end}}
