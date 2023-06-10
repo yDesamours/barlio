@@ -2,6 +2,7 @@ package model
 
 import (
 	"barlio/internal/data"
+	"barlio/internal/validator"
 	"context"
 	"database/sql"
 	"time"
@@ -99,4 +100,19 @@ func (m *UserModel) GetAll(id int) ([]User, error) {
 		return nil, err
 	}
 	return users, nil
+}
+
+func (m *UserModel) ValidateUser(u *User, validator *validator.Validator) error {
+	user, err := m.Get(User{Username: data.String(u.Username)})
+	if err != nil {
+		return err
+	}
+	validator.Check(user == nil, "username", "username already taken")
+
+	user, err = m.Get(User{Email: data.String(u.Email)})
+	if err != nil {
+		return err
+	}
+	validator.Check(user == nil, "email", "email already in use")
+	return nil
 }

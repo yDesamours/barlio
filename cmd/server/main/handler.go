@@ -1,8 +1,6 @@
 package main
 
 import (
-	"barlio/cmd/server/model"
-	"barlio/internal/data"
 	"barlio/internal/mailer"
 	"barlio/internal/validator"
 	"barlio/ui"
@@ -38,8 +36,10 @@ func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
 	form := r.PostForm
 	infos := app.newTemplateData()
 
+	user := app.newUser(form)
+
 	validator := validator.New()
-	app.validateSignForm(form, validator)
+	app.ValidateUser(user, validator)
 	if !validator.Valid() {
 		err := app.signInError(w, infos, form, validator)
 		if err != nil {
@@ -48,35 +48,7 @@ func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := app.User.Get(model.User{Username: data.String(form.Get("username"))})
-	if err != nil {
-		app.error(err)
-		return
-	}
-	validator.Check(user == nil, "username", "username already taken")
-	if !validator.Valid() {
-		err := app.signInError(w, infos, form, validator)
-		if err != nil {
-			app.error(err)
-		}
-		return
-	}
-
-	user, err = app.User.Get(model.User{Email: data.String(form.Get("email"))})
-	if err != nil {
-		app.error(err)
-		return
-	}
-	validator.Check(user == nil, "email", "email already in use")
-	if !validator.Valid() {
-		err := app.signInError(w, infos, form, validator)
-		if err != nil {
-			app.error(err)
-		}
-		return
-	}
-
-	user, err = app.newUser(form)
+	err := app.User.ValidateUser(user, validator)
 	if err != nil {
 		app.error(err)
 		return

@@ -6,32 +6,23 @@ import (
 	"barlio/internal/validator"
 	"net/http"
 	"net/url"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
-func (app *App) validateSignForm(form url.Values, validator *validator.Validator) {
-	validator.NotEmpty(form.Get("username"), "username", "missing username")
-	if validator.NotEmpty(form.Get("email"), "email", "missing email") {
-		validator.IsEmailValid(form.Get("email"), "email", "invalid email")
-	}
-	validator.NotEmpty(form.Get("password"), "password", "missing password")
-	if validator.NotEmpty(form.Get("passwordconfirm"), "passwordconfirm", "missing password confirmation") {
-		validator.Equal(form.Get("password"), form.Get("passwordconfirm"), "passwordconfirm", "must match password")
-	}
-}
-
-func (app *App) newUser(form url.Values) (*model.User, error) {
-	hashPassword, err := bcrypt.GenerateFromPassword([]byte(form.Get("password")), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, err
-	}
+func (app *App) newUser(form url.Values) *model.User {
 	user := &model.User{
 		Username: data.String(form.Get("username")),
 		Email:    data.String(form.Get("email")),
-		Password: data.String(hashPassword),
+		Password: data.String(form.Get("password")),
 	}
-	return user, nil
+	return user
+}
+
+func (app *App) ValidateUser(user *model.User, validator *validator.Validator) {
+	validator.NotEmpty(user.Username, "username", "missing username")
+	if validator.NotEmpty(user.Email, "email", "missing email") {
+		validator.IsEmailValid(user.Email, "email", "invalid email")
+	}
+	validator.NotEmpty(user.Password, "password", "missing password")
 }
 
 func (app *App) signInError(w http.ResponseWriter, data templateData, form url.Values, validator *validator.Validator) error {

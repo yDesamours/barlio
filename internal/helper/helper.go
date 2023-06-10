@@ -1,5 +1,7 @@
 package helper
 
+import "strings"
+
 func IsASet[T comparable](items []T) bool {
 	var hashMap = make(map[T]bool)
 
@@ -8,4 +10,8 @@ func IsASet[T comparable](items []T) bool {
 	}
 
 	return len(hashMap) == len(items)
+}
+
+func StringIsNotEmpty[T ~string](s T) bool {
+	return strings.TrimSpace(string(s)) != ""
 }
