@@ -13,15 +13,15 @@ import (
 )
 
 type Article struct {
-	ID         int                  `json:"id"`
-	Subject    data.String          `json:"subject,omitempty"`
-	Categories ListArticleCategorie `json:"categorie,omitempty"`
-	Title      data.String          `json:"title,omitempty"`
-	Content    data.String          `json:"content,omitempty"`
-	Gender     data.String          `json:"gender,omitempty"`
-	CreatedAt  time.Time            `json:"created_at,omitempty"`
-	Author     User                 `json:"author"`
-	Tags       []data.String        `json:"tags"`
+	ID         int
+	Subject    data.String
+	Categories ListArticleCategorie
+	Title      data.String
+	Content    data.String
+	Gender     data.String
+	CreatedAt  time.Time
+	Author     User
+	Tags       []data.String
 }
 
 type ArticleCategorie struct {
