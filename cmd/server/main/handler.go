@@ -11,6 +11,7 @@ import (
 func (app *App) homeHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData()
 	data.Set("page", "Home")
+	data.Set("showHeader", false)
 
 	tmpl := app.Templates["home"]
 	err := tmpl.Execute(w, data)
@@ -22,6 +23,7 @@ func (app *App) homeHandler(w http.ResponseWriter, r *http.Request) {
 func (app *App) signinPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData()
 	data.Set("page", "Signin")
+	data.Set("showHeader", false)
 
 	tmpl := app.Templates["signin"]
 	err := tmpl.Execute(w, data)
@@ -65,9 +67,22 @@ func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	go app.SendWelcomeEmail(user)
+	http.Redirect(w, r, "/verification", http.StatusMovedPermanently)
+}
 
-	http.Redirect(w, r, "/", http.StatusMovedPermanently)
+func (app *App) verificationHandler(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData()
+	data.Set("page", "welcome")
+	data.Set("showHeader", false)
+
+	//user := r.Context().Value("user").(model.User)
+
+	tmpl := app.Templates["welcome"]
+	err := tmpl.Execute(w, data)
+	if err != nil {
+		app.error(err)
+		return
+	}
 }
 
 func (app *App) signupPageHandler(w http.ResponseWriter, r *http.Request) {

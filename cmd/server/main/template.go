@@ -18,7 +18,8 @@ type templateData map[string]interface{}
 
 func (app *App) newTemplateData() templateData {
 	return templateData{
-		"time": time.Now(),
+		"time":       time.Now(),
+		"showHeader": true,
 	}
 }
 

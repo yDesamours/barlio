@@ -14,6 +14,7 @@ func newRouter(app *App) http.Handler {
 	router.HandlerFunc(http.MethodGet, "/", app.homeHandler)
 	router.HandlerFunc(http.MethodGet, "/signin", app.signinPageHandler)
 	router.HandlerFunc(http.MethodGet, "/login", app.signupPageHandler)
+	router.HandlerFunc(http.MethodGet, "/verification", app.verificationHandler)
 	router.HandlerFunc(http.MethodPost, "/signin", app.signinHandler)
 	router.Handler(http.MethodGet, "/statics/*path", app.fileServer())
 

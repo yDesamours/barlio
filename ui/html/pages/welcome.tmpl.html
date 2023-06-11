@@ -1,0 +1,21 @@
+{{define "title"}}Welcome{{end}}
+
+{{define "main"}}
+<div class="vh-100 row align-items-center justify-content-center">
+    <div class="col-4">
+        <div class="card">
+            <div class="card-header">
+                Welcome, {{with .user}}{{.Username}}{{end}}
+            </div>
+            <div class="card-body">
+                <p>
+                    Thank you for joining us and Welcome. We need to verify your email address
+                    in order to finish your account. We've send an email containing a button. Please, check
+                    your mail inbox. If you don't see any mail from us, remember to check your spam.
+                </p>
+                <p><a href="/verification">resend the email</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}
