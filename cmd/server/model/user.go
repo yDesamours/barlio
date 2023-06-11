@@ -6,6 +6,8 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -21,6 +23,15 @@ type User struct {
 	PreferedArticleCategories ListArticleCategorie
 	Bio                       data.String
 	ProfilPicture             data.String
+}
+
+func (u *User) HashPassword() error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	*&u.Password = data.String(hashedPassword)
+	return nil
 }
 
 type UserModel struct {

@@ -17,12 +17,15 @@ func (app *App) newUser(form url.Values) *model.User {
 	return user
 }
 
-func (app *App) ValidateUser(user *model.User, validator *validator.Validator) {
+func (app *App) ValidateUser(user *model.User, confirmedPassword string, validator *validator.Validator) {
 	validator.NotEmpty(user.Username, "username", "missing username")
 	if validator.NotEmpty(user.Email, "email", "missing email") {
 		validator.IsEmailValid(user.Email, "email", "invalid email")
 	}
 	validator.NotEmpty(user.Password, "password", "missing password")
+	if validator.NotEmpty(data.String(confirmedPassword), "passwordconfirm", "no password confirmation") {
+		validator.Equal(user.Password, data.String(confirmedPassword), "password", "password mismatch")
+	}
 }
 
 func (app *App) signInError(w http.ResponseWriter, data templateData, form url.Values, validator *validator.Validator) error {
@@ -33,4 +36,8 @@ func (app *App) signInError(w http.ResponseWriter, data templateData, form url.V
 
 	tmpl := app.Templates["signin"]
 	return tmpl.Execute(w, data)
+}
+
+func (app *App) SendWelcomeEmail(u *model.User) error {
+	return nil
 }

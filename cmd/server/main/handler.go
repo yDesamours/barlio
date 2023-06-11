@@ -1,7 +1,6 @@
 package main
 
 import (
-	"barlio/internal/mailer"
 	"barlio/internal/validator"
 	"barlio/ui"
 	"net/http"
@@ -39,7 +38,7 @@ func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
 	user := app.newUser(form)
 
 	validator := validator.New()
-	app.ValidateUser(user, validator)
+	app.ValidateUser(user, form.Get("passwordconfirm"), validator)
 	if !validator.Valid() {
 		err := app.signInError(w, infos, form, validator)
 		if err != nil {
@@ -54,13 +53,19 @@ func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = user.HashPassword()
+	if err != nil {
+		app.error(err)
+		return
+	}
+
 	err = app.User.Insert(user)
 	if err != nil {
 		app.error(err)
 		return
 	}
 
-	go mailer.SendWelcomeEmail()
+	go app.SendWelcomeEmail(user)
 
 	http.Redirect(w, r, "/", http.StatusMovedPermanently)
 }
