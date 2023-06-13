@@ -18,6 +18,6 @@ func newRouter(app *App) http.Handler {
 	router.HandlerFunc(http.MethodPost, "/signin", app.signinHandler)
 	router.Handler(http.MethodGet, "/statics/*path", app.fileServer())
 
-	staticMiddlewares := alice.New(app.recoverMiddleware)
+	staticMiddlewares := alice.New(app.recoverMiddleware, app.SessionManager.LoadAndSave, app.getCurrentUser)
 	return staticMiddlewares.Then(router)
 }

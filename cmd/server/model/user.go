@@ -34,6 +34,10 @@ func (u *User) HashPassword() error {
 	return nil
 }
 
+func NullUser() User {
+	return User{}
+}
+
 type UserModel struct {
 	DB *sql.DB
 }

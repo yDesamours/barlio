@@ -34,6 +34,9 @@ type Config struct {
 	DB struct {
 		DSN string
 	}
+	Session struct {
+		Duration int
+	}
 }
 
 func newApp(conf *Config) *App {
