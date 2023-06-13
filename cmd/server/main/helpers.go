@@ -3,9 +3,15 @@ package main
 import (
 	"barlio/cmd/server/model"
 	"barlio/internal/data"
+	"barlio/internal/token"
 	"barlio/internal/validator"
 	"net/http"
 	"net/url"
+	"time"
+)
+
+const (
+	tokenDuration = time.Hour * 4
 )
 
 func (app *App) newUser(form url.Values) *model.User {
@@ -38,6 +44,21 @@ func (app *App) signInError(w http.ResponseWriter, data templateData, form url.V
 	return tmpl.Execute(w, data)
 }
 
-func (app *App) SendWelcomeEmail(u *model.User) error {
+func (app *App) sendWelcomeEmail(u *model.User) error {
 	return nil
+}
+
+func (app *App) newVerificationToken(user *model.User) (*model.Token, error) {
+	plainTextToken, hashedToken, err := token.GenerateToken()
+	if err != nil {
+		return nil, err
+	}
+	token := model.Token{
+		Userid:    user.ID,
+		Scope:     model.VerificationScope,
+		Token:     plainTextToken,
+		Hash:      hashedToken,
+		ExpiretAt: time.Now().Add(tokenDuration),
+	}
+	return &token, nil
 }

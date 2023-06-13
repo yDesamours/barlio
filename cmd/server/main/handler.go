@@ -1,6 +1,7 @@
 package main
 
 import (
+	"barlio/cmd/server/model"
 	"barlio/internal/validator"
 	"barlio/ui"
 	"net/http"
@@ -49,7 +50,7 @@ func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := app.User.ValidateUser(user, validator)
+	err := app.models.user.ValidateUser(user, validator)
 	if err != nil {
 		app.error(err)
 		return
@@ -61,7 +62,7 @@ func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.User.Insert(user)
+	err = app.models.user.Insert(user)
 	if err != nil {
 		app.error(err)
 		return
@@ -75,10 +76,28 @@ func (app *App) verificationHandler(w http.ResponseWriter, r *http.Request) {
 	data.Set("page", "welcome")
 	data.Set("showHeader", false)
 
-	//user := r.Context().Value("user").(model.User)
+	user := r.Context().Value("user").(model.User)
 
 	tmpl := app.Templates["welcome"]
 	err := tmpl.Execute(w, data)
+	if err != nil {
+		app.error(err)
+		return
+	}
+
+	err = app.models.token.DeleteForUser(user.ID, model.VerificationScope)
+	if err != nil {
+		app.error(err)
+		return
+	}
+
+	token, err := app.newVerificationToken(&user)
+	if err != nil {
+		app.error(err)
+		return
+	}
+
+	err = app.models.token.Insert(token)
 	if err != nil {
 		app.error(err)
 		return

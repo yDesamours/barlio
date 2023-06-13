@@ -17,9 +17,14 @@ type App struct {
 	DB             *sql.DB
 	Logger         *Logger
 	Config         *Config
-	User           *model.UserModel
-	Article        *model.ArticleModel
+	models         *models
 	Templates      map[string]*PageTemplate
+}
+
+type models struct {
+	user    *model.UserModel
+	article *model.ArticleModel
+	token   *model.TokenModel
 }
 
 type Config struct {

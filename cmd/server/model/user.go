@@ -30,7 +30,7 @@ func (u *User) HashPassword() error {
 	if err != nil {
 		return err
 	}
-	*&u.Password = data.String(hashedPassword)
+	u.Password = data.String(hashedPassword)
 	return nil
 }
 
