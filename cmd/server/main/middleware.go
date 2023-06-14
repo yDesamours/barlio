@@ -21,7 +21,7 @@ func (app *App) recoverMiddleware(h http.Handler) http.Handler {
 
 func (app *App) getCurrentUserMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userId := app.SessionManager.GetInt(r.Context(), "userid")
+		userId := app.SessionManager.GetInt(r.Context(), string(userType))
 		user, err := app.models.user.Get(model.User{ID: userId})
 
 		if err != nil {
@@ -29,7 +29,7 @@ func (app *App) getCurrentUserMiddleware(h http.Handler) http.Handler {
 			*user = model.NullUser()
 		}
 
-		ctx := context.WithValue(r.Context(), "user", user)
+		ctx := context.WithValue(r.Context(), userType, user)
 		r = r.WithContext(ctx)
 
 		h.ServeHTTP(w, r)
