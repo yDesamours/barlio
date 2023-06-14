@@ -11,8 +11,10 @@ import (
 
 func (app *App) homeHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData()
+	user := app.getUser(r)
+
 	data.Set("page", "Home")
-	data.Set("showHeader", false)
+	data.Set("user", user)
 
 	tmpl := app.Templates["home"]
 	err := tmpl.Execute(w, data)
@@ -67,6 +69,8 @@ func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
 		app.error(err)
 		return
 	}
+
+	app.SessionManager.Put(r.Context(), "userId", user.ID)
 
 	http.Redirect(w, r, "/verification", http.StatusMovedPermanently)
 }

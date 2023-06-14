@@ -14,6 +14,15 @@ const (
 	tokenDuration = time.Hour * 4
 )
 
+func (app App) getUser(r *http.Request) *model.User {
+	user := r.Context().Value("user").(*model.User)
+
+	if user.ID == 0 {
+		return nil
+	}
+	return user
+}
+
 func (app *App) newUser(form url.Values) *model.User {
 	user := &model.User{
 		Username: data.String(form.Get("username")),

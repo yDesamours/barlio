@@ -2,10 +2,10 @@ package main
 
 import (
 	"barlio/cmd/server/model"
+	"fmt"
 	"log"
 
 	"database/sql"
-	"fmt"
 	"net/http"
 
 	"github.com/alexedwards/scs/v2"
@@ -45,19 +45,18 @@ func newApp(conf *Config) *App {
 		Config: conf,
 	}
 
-	router := newRouter(app)
-	server := http.Server{
-		Handler:  router,
-		Addr:     fmt.Sprintf(":%d", conf.Server.Port),
-		ErrorLog: log.New(app.Logger, "", log.LstdFlags),
-	}
-
-	app.Server = &server
-
 	return app
 }
 
 func (app *App) ListenAndServe() error {
+	router := newRouter(app)
+	server := http.Server{
+		Handler:  router,
+		Addr:     fmt.Sprintf(":%d", app.Config.Server.Port),
+		ErrorLog: log.New(app.Logger, "", log.LstdFlags),
+	}
+
+	app.Server = &server
 	app.infos("server is starting", map[string]interface{}{"addr": app.Config.Server.Port})
 	return app.Server.ListenAndServe()
 }

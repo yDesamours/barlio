@@ -1,6 +1,7 @@
 package main
 
 import (
+	"barlio/cmd/server/model"
 	"flag"
 	"os"
 	"time"
@@ -13,7 +14,7 @@ func main() {
 	conf := Config{}
 	flag.IntVar(&conf.Server.Port, "addr", 80, "the server port")
 	flag.IntVar(&conf.Session.Duration, "lifetime", 80, "session lifetime")
-	flag.StringVar(&conf.DB.DSN, "dsn", "postgres://barlio:barliopass@localhost:5432", "database dsn")
+	flag.StringVar(&conf.DB.DSN, "dsn", "postgres://barlio:barliopass@localhost:5432/barlio?sslmode=disable", "database dsn")
 	flag.Parse()
 
 	app := newApp(&conf)
@@ -27,6 +28,12 @@ func main() {
 	}
 	defer db.Close()
 	app.setDB(db)
+
+	app.models = &models{
+		user:    &model.UserModel{DB: db},
+		article: &model.ArticleModel{DB: db},
+		token:   &model.TokenModel{DB: db},
+	}
 
 	templates, err := appPage()
 	if err != nil {

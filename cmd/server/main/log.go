@@ -2,17 +2,19 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"runtime"
+	"runtime/debug"
 	"sync"
 	"time"
 )
 
 const (
-	INFOS       logType = "INFOS"
-	ERROR       logType = "ERROR"
-	SEVEREERROR logType = "SEVERE ERROR"
+	INFOS logType = "INFOS"
+	ERROR logType = "ERROR"
+	PANIC logType = "PANIC"
 )
 
 type logType string
@@ -78,4 +80,9 @@ func (app *App) infos(message string, params map[string]interface{}) {
 func (app *App) error(err error) {
 	_, file, line, _ := runtime.Caller(1)
 	app.Logger.writelog(ERROR, err.Error(), map[string]interface{}{"file": file, "line": line - 2})
+}
+
+func (app *App) panic(err any) {
+	stack := debug.Stack()
+	app.Logger.writelog(PANIC, fmt.Sprintln(err), map[string]interface{}{"stack": string(stack)})
 }
