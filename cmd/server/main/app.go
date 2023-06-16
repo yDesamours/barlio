@@ -2,6 +2,7 @@ package main
 
 import (
 	"barlio/cmd/server/model"
+	"barlio/internal/mailer"
 	"fmt"
 	"log"
 
@@ -19,6 +20,7 @@ type App struct {
 	Config         *Config
 	models         *models
 	Templates      map[string]*PageTemplate
+	mailer         *mailer.Mailer
 }
 
 type models struct {
@@ -36,6 +38,13 @@ type Config struct {
 	}
 	Session struct {
 		Duration int
+	}
+	SMTP struct {
+		Host     string
+		Port     int
+		Username string
+		Password string
+		Sender   string
 	}
 }
 

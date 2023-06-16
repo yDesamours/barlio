@@ -75,14 +75,46 @@ func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/verification", http.StatusMovedPermanently)
 }
 
-func (app *App) verificationHandler(w http.ResponseWriter, r *http.Request) {
+func (app *App) emailVerificationPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData()
-	data.Set("page", "welcome")
+	data.Set("page", "emailverification")
 	data.Set("showHeader", false)
 
-	user := r.Context().Value("user").(model.User)
+	user := app.getUser(r)
+	if user == nil {
+		http.Redirect(w, r, "/signup", http.StatusMovedPermanently)
+		return
+	}
 
-	tmpl := app.Templates["welcome"]
+	if user.IsVerified {
+		http.Redirect(w, r, "/", http.StatusMovedPermanently)
+		return
+	}
+
+	tmpl := app.Templates["emailverification"]
+	err := tmpl.Execute(w, data)
+	if err != nil {
+		app.error(err)
+	}
+}
+
+func (app *App) emailVerificationTokenPageHandler(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData()
+	data.Set("page", "emailverificationtoken")
+	data.Set("showHeader", false)
+
+	user := app.getUser(r)
+	if user == nil {
+		http.Redirect(w, r, "/signup", http.StatusMovedPermanently)
+		return
+	}
+
+	if user.IsVerified {
+		http.Redirect(w, r, "/", http.StatusMovedPermanently)
+		return
+	}
+
+	tmpl := app.Templates["emailverificationtoken"]
 	err := tmpl.Execute(w, data)
 	if err != nil {
 		app.error(err)
@@ -95,7 +127,7 @@ func (app *App) verificationHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := app.newVerificationToken(&user)
+	token, err := app.newVerificationToken(user)
 	if err != nil {
 		app.error(err)
 		return

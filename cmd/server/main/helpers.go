@@ -15,7 +15,7 @@ const (
 )
 
 func (app App) getUser(r *http.Request) *model.User {
-	user := r.Context().Value("user").(*model.User)
+	user := r.Context().Value(userType).(*model.User)
 
 	if user.ID == 0 {
 		return nil
