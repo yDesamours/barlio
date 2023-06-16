@@ -33,8 +33,8 @@ type PageTemplate struct {
 
 func appPage() (map[string]*PageTemplate, error) {
 	templates := map[string]*PageTemplate{}
-	baseTemplate := template.Must(template.ParseFS(ui.FILES, "html/base.tmpl.html"))
-	baseTemplate = template.Must(baseTemplate.ParseFS(ui.FILES, "html/partials/*"))
+	baseTemplate := template.Must(template.ParseFS(ui.FILES, "web/html/base.tmpl.html"))
+	baseTemplate = template.Must(baseTemplate.ParseFS(ui.FILES, "web/html/partials/*"))
 
 	pages, err := fs.Glob(ui.FILES, "html/pages/*.tmpl.html")
 	if err != nil {
@@ -56,4 +56,21 @@ func appPage() (map[string]*PageTemplate, error) {
 
 func (tmpl *PageTemplate) Execute(out io.Writer, data templateData) error {
 	return tmpl.Tmpl.ExecuteTemplate(out, base, data)
+}
+
+func mailTemplates() (map[string]*PageTemplate, error) {
+	templates := map[string]*PageTemplate{}
+	pages, err := fs.Glob(ui.FILES, "mail/*")
+	if err != nil {
+		return nil, err
+	}
+
+	for _, page := range pages {
+		base := filepath.Base(page)
+		name := base[:strings.Index(base, ".")]
+
+		tmpl := template.Must(template.ParseFS(ui.FILES, page))
+		templates[name] = &PageTemplate{Tmpl: tmpl}
+	}
+	return templates, nil
 }

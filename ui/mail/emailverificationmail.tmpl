@@ -1,0 +1,15 @@
+{{define "mailobject"}}email verification link{{end}}
+
+{{define "body"}}
+    <div>
+        <p>Thank you for joining Barlio. You are about to feel an incredible adventure.</p>
+        <p>Click <a href="localhost/emailconfirm?token={{ .token}}here</a> to verify your account</p>
+        <p>This link will expire within 4 hours upon received</p>
+    <div> 
+{{end}}
+
+{{define "alternative"}}
+        Thank you for joining Barlio. You are about to feel an incredible adventure.
+        Click  on this link to veify your account: localhost/emailconfirm?token={{ .token}}
+        This link will expire within 4 hours upon received
+{{end}}

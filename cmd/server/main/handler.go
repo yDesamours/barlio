@@ -16,7 +16,7 @@ func (app *App) homeHandler(w http.ResponseWriter, r *http.Request) {
 	data.Set("page", "Home")
 	data.Set("user", user)
 
-	tmpl := app.Templates["home"]
+	tmpl := app.PageTemplates["home"]
 	err := tmpl.Execute(w, data)
 	if err != nil {
 		app.error(err)
@@ -28,7 +28,7 @@ func (app *App) signinPageHandler(w http.ResponseWriter, r *http.Request) {
 	data.Set("page", "Signin")
 	data.Set("showHeader", false)
 
-	tmpl := app.Templates["signin"]
+	tmpl := app.PageTemplates["signin"]
 	err := tmpl.Execute(w, data)
 	if err != nil {
 		app.error(err)
@@ -91,7 +91,7 @@ func (app *App) emailVerificationPageHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	tmpl := app.Templates["emailverification"]
+	tmpl := app.PageTemplates["emailverification"]
 	err := tmpl.Execute(w, data)
 	if err != nil {
 		app.error(err)
@@ -114,7 +114,7 @@ func (app *App) emailVerificationTokenPageHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	tmpl := app.Templates["emailverificationtoken"]
+	tmpl := app.PageTemplates["emailverificationtoken"]
 	err := tmpl.Execute(w, data)
 	if err != nil {
 		app.error(err)
@@ -144,7 +144,7 @@ func (app *App) signupPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData()
 	data.Set("page", "Signup")
 
-	tmpl := app.Templates["signup"]
+	tmpl := app.PageTemplates["signup"]
 	err := tmpl.Execute(w, data)
 	if err != nil {
 		app.error(err)

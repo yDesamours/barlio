@@ -41,11 +41,17 @@ func main() {
 		token:   &model.TokenModel{DB: db},
 	}
 
-	templates, err := appPage()
+	pageTemplates, err := appPage()
 	if err != nil {
 		log.Fatal(err)
 	}
-	app.Templates = templates
+	app.PageTemplates = pageTemplates
+
+	mailTemplates, err := mailTemplates()
+	if err != nil {
+		log.Fatal(err)
+	}
+	app.MailTemplate = mailTemplates
 
 	sessionManager := scs.New()
 	sessionManager.Lifetime = time.Duration(conf.Session.Duration)
@@ -55,7 +61,7 @@ func main() {
 
 	smtp := &conf.SMTP
 	mailer := mailer.NewMailer(smtp.Port, smtp.Host, smtp.Username, smtp.Password, smtp.Sender)
-	app.mailer = mailer
+	app.Mailer = mailer
 
 	if err := app.ListenAndServe(); err != nil {
 		log.Fatal(err)

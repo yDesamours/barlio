@@ -1,0 +1,29 @@
+{{define "title"}}sign up {{end}}
+
+{{define "main"}}
+<div class="row vh-100">
+    <div class="col-5 mx-auto align-self-center">
+        <h1 class="text-center text-primary">Barlio</h1>
+        <form action="/signin" method="post">
+            <div>
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control {{if .errors.username}}is-invalid{{end}}" name="username" id="username" placeholder="your username">
+                    <label for="username">Username</label>
+                </div>
+                {{with .errors.username}}<ul>{{range .}}<li class="form-text text-danger">{{.}}</li>{{end}}</ul>{{end}}
+            </div>
+            <div>
+                <div class="form-floating mb-3">
+                    <input type="password" class="form-control {{if .errors.password}}is-invalid{{end}}" name="password" id="password" placeholder="password">
+                    <label for="password">Password</label>
+                </div>
+                {{with .errors.password}}<ul>{{range .}}<li class="form-text text-danger">{{.}}</li>{{end}}</ul>{{end}}
+            </div>
+            <div>
+                <input type="submit" class="btn btn-primary" value="Sign in">
+            </div>
+        </form>
+        <div><span>Dont have an account? <a class="link" role="button" href="/signin">Sign in</a></span></div>
+    </div>
+</div>
+{{end}}

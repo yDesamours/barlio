@@ -49,7 +49,7 @@ func (app *App) signInError(w http.ResponseWriter, data templateData, form url.V
 	data.Set("signin", map[string]interface{}{"username": form.Get("username"), "email": form.Get("email")})
 	data.Set("page", "Signin")
 
-	tmpl := app.Templates["signin"]
+	tmpl := app.PageTemplates["signin"]
 	return tmpl.Execute(w, data)
 }
 
