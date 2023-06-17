@@ -5,6 +5,7 @@ import (
 	"barlio/internal/validator"
 	"context"
 	"database/sql"
+	"net/url"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -40,6 +41,15 @@ func NullUser() User {
 
 type UserModel struct {
 	DB *sql.DB
+}
+
+func (m *UserModel) NewUser(form url.Values) *User {
+	user := &User{
+		Username: data.String(form.Get("username")),
+		Email:    data.String(form.Get("email")),
+		Password: data.String(form.Get("password")),
+	}
+	return user
 }
 
 func (m *UserModel) Insert(u *User) error {

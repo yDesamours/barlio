@@ -40,7 +40,7 @@ func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
 	form := r.PostForm
 	infos := app.newTemplateData()
 
-	user := app.newUser(form)
+	user := app.models.user.NewUser(form)
 
 	validator := validator.New()
 	app.ValidateUser(user, form.Get("passwordconfirm"), validator)
@@ -81,40 +81,8 @@ func (app *App) emailVerificationPageHandler(w http.ResponseWriter, r *http.Requ
 	data.Set("showHeader", false)
 
 	user := app.getUser(r)
-	if user == nil {
-		http.Redirect(w, r, "/signup", http.StatusMovedPermanently)
-		return
-	}
-
-	if user.IsVerified {
-		http.Redirect(w, r, "/", http.StatusMovedPermanently)
-		return
-	}
 
 	tmpl := app.PageTemplates["emailverification"]
-	err := tmpl.Execute(w, data)
-	if err != nil {
-		app.error(err)
-	}
-}
-
-func (app *App) emailVerificationTokenPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := app.newTemplateData()
-	data.Set("page", "emailverificationtoken")
-	data.Set("showHeader", false)
-
-	user := app.getUser(r)
-	if user == nil {
-		http.Redirect(w, r, "/signup", http.StatusMovedPermanently)
-		return
-	}
-
-	if user.IsVerified {
-		http.Redirect(w, r, "/", http.StatusMovedPermanently)
-		return
-	}
-
-	tmpl := app.PageTemplates["emailverificationtoken"]
 	err := tmpl.Execute(w, data)
 	if err != nil {
 		app.error(err)
@@ -138,6 +106,8 @@ func (app *App) emailVerificationTokenPageHandler(w http.ResponseWriter, r *http
 		app.error(err)
 		return
 	}
+
+	go app.sendVerificationEmail(user, token)
 }
 
 func (app *App) signupPageHandler(w http.ResponseWriter, r *http.Request) {

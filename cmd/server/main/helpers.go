@@ -5,6 +5,7 @@ import (
 	"barlio/internal/data"
 	"barlio/internal/token"
 	"barlio/internal/validator"
+	"bytes"
 	"net/http"
 	"net/url"
 	"time"
@@ -19,15 +20,6 @@ func (app App) getUser(r *http.Request) *model.User {
 
 	if user.ID == 0 {
 		return nil
-	}
-	return user
-}
-
-func (app *App) newUser(form url.Values) *model.User {
-	user := &model.User{
-		Username: data.String(form.Get("username")),
-		Email:    data.String(form.Get("email")),
-		Password: data.String(form.Get("password")),
 	}
 	return user
 }
@@ -53,8 +45,48 @@ func (app *App) signInError(w http.ResponseWriter, data templateData, form url.V
 	return tmpl.Execute(w, data)
 }
 
-func (app *App) sendWelcomeEmail(u *model.User) error {
+func (app *App) sendVerificationEmail(user *model.User, token *model.Token) error {
+	var (
+		data         = templateData{}
+		mailTemplate = app.MailTemplate["emailverification"]
+	)
+
+	mailObject, err := parseEmailData(mailTemplate, data)
+	if err != nil {
+		return err
+	}
+	app.Mailer.Send(string(user.Email), mailObject)
+
 	return nil
+}
+
+func parseEmailData(mailTemplate *PageTemplate, data templateData) (map[string]string, error) {
+	var (
+		buffer     = &bytes.Buffer{}
+		mailObject = map[string]string{}
+	)
+
+	err := mailTemplate.ExecuteTemplate(buffer, "subject", data)
+	if err != nil {
+		return nil, err
+	}
+	mailObject["subject"] = buffer.String()
+	buffer.Reset()
+
+	err = mailTemplate.ExecuteTemplate(buffer, "alternative", data)
+	if err != nil {
+		return nil, err
+	}
+	mailObject["alternative"] = buffer.String()
+	buffer.Reset()
+
+	err = mailTemplate.ExecuteTemplate(buffer, "body", data)
+	if err != nil {
+		return nil, err
+	}
+	mailObject["body"] = buffer.String()
+
+	return mailObject, nil
 }
 
 func (app *App) newVerificationToken(user *model.User) (*model.Token, error) {

@@ -58,6 +58,10 @@ func (tmpl *PageTemplate) Execute(out io.Writer, data templateData) error {
 	return tmpl.Tmpl.ExecuteTemplate(out, base, data)
 }
 
+func (tmpl *PageTemplate) ExecuteTemplate(out io.Writer, name string, data templateData) error {
+	return tmpl.Tmpl.ExecuteTemplate(out, name, data)
+}
+
 func mailTemplates() (map[string]*PageTemplate, error) {
 	templates := map[string]*PageTemplate{}
 	pages, err := fs.Glob(ui.FILES, "mail/*")
