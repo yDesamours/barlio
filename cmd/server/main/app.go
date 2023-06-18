@@ -19,9 +19,9 @@ type App struct {
 	Logger         *Logger
 	Config         *Config
 	models         *models
-	PageTemplates  map[string]*PageTemplate
+	PageTemplates  templateMap
 	Mailer         *mailer.Mailer
-	MailTemplate   map[string]*PageTemplate
+	MailTemplate   templateMap
 }
 
 type models struct {

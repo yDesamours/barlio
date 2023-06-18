@@ -14,7 +14,7 @@ import (
 func main() {
 	conf := Config{}
 	flag.IntVar(&conf.Server.Port, "addr", 80, "the server port")
-	flag.IntVar(&conf.Session.Duration, "lifetime", 80, "session lifetime")
+	flag.IntVar(&conf.Session.Duration, "lifetime", 24, "session lifetime")
 	flag.StringVar(&conf.DB.DSN, "dsn", "postgres://barlio:barliopass@localhost:5432/barlio?sslmode=disable", "database dsn")
 	flag.StringVar(&conf.SMTP.Host, "smtphost", "sandbox.smtp.mailtrap.io", "smtp server host")
 	flag.StringVar(&conf.SMTP.Username, "smtpuser", "73a9a7e70105ed", "smtp server username")
@@ -54,9 +54,8 @@ func main() {
 	app.MailTemplate = mailTemplates
 
 	sessionManager := scs.New()
-	sessionManager.Lifetime = time.Duration(conf.Session.Duration)
-	store := postgresstore.NewWithCleanupInterval(db, time.Hour*24)
-	sessionManager.Store = store
+	sessionManager.Lifetime = time.Duration(conf.Session.Duration) * time.Hour
+	sessionManager.Store = postgresstore.NewWithCleanupInterval(db, time.Hour*24)
 	app.SessionManager = sessionManager
 
 	smtp := &conf.SMTP

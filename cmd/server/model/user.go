@@ -57,7 +57,7 @@ func (m *UserModel) Insert(u *User) error {
 func (m *UserModel) Get(user User) (*User, error) {
 	var u User
 	const statement = `SELECT 
-							firstname, lastname, username,  password, email, joined_at,
+							id, firstname, lastname, username,  password, email, joined_at,
 							isverified
 						FROM users
 						WHERE 
@@ -67,7 +67,7 @@ func (m *UserModel) Get(user User) (*User, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	err := m.DB.QueryRowContext(ctx, statement, user.ID, user.Username, user.Email).Scan(&u.Firstname, &u.Lastname, &u.Username,
+	err := m.DB.QueryRowContext(ctx, statement, user.ID, user.Username, user.Email).Scan(&u.ID, &u.Firstname, &u.Lastname, &u.Username,
 		&u.Password, &u.Email, &u.JoinedAt, &u.IsVerified)
 
 	return &u, err
@@ -89,7 +89,7 @@ func (m *UserModel) Delete(id int) error {
 func (m *UserModel) GetAll(id int) ([]User, error) {
 	var users []User
 	const statement = `SELECT 
-							username, firstname, lastname, profil_picture
+							id, username, firstname, lastname, profil_picture
 						FROM users
 						WHERE
 							isverified=true`
@@ -105,7 +105,7 @@ func (m *UserModel) GetAll(id int) ([]User, error) {
 	for rows.Next() {
 		var u User
 
-		err = rows.Scan(&u.Username, &u.Firstname, &u.Lastname, &u.ProfilPicture)
+		err = rows.Scan(&u.ID, &u.Username, &u.Firstname, &u.Lastname, &u.ProfilPicture)
 		if err != nil {
 			return nil, err
 		}

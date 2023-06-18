@@ -21,7 +21,7 @@ func (app *App) homeHandler(w http.ResponseWriter, r *http.Request) {
 	data.Set("page", "Home")
 	data.Set("user", user)
 
-	tmpl := app.PageTemplates["home"]
+	tmpl := app.PageTemplates.Get(HOMEPAGE)
 	err := tmpl.Execute(w, data)
 	if err != nil {
 		app.error(err)
@@ -33,7 +33,7 @@ func (app *App) signinPageHandler(w http.ResponseWriter, r *http.Request) {
 	data.Set("page", "Signin")
 	data.Set("showHeader", false)
 
-	tmpl := app.PageTemplates["signin"]
+	tmpl := app.PageTemplates.Get(SIGNINPAGE)
 	err := tmpl.Execute(w, data)
 	if err != nil {
 		app.error(err)
@@ -78,7 +78,7 @@ func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
 
 	app.SessionManager.Put(r.Context(), "userId", user.ID)
 
-	http.Redirect(w, r, "/emailverification", http.StatusMovedPermanently)
+	http.Redirect(w, r, EMAILVERIFICATIONPAGE, http.StatusMovedPermanently)
 }
 
 func (app *App) emailVerificationPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -88,11 +88,11 @@ func (app *App) emailVerificationPageHandler(w http.ResponseWriter, r *http.Requ
 
 	user := app.getUser(r)
 	if user == nil {
-		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
+		http.Redirect(w, r, SIGNINPAGE, http.StatusMovedPermanently)
 		return
 	}
 
-	tmpl := app.PageTemplates["emailverification"]
+	tmpl := app.PageTemplates.Get(EMAILVERIFICATIONPAGE)
 	err := tmpl.Execute(w, data)
 	if err != nil {
 		app.error(err)
@@ -125,7 +125,7 @@ func (app *App) signupPageHandler(w http.ResponseWriter, r *http.Request) {
 	data.Set("page", "Signup")
 	data.Set("showHeader", false)
 
-	tmpl := app.PageTemplates["signup"]
+	tmpl := app.PageTemplates.Get(SIGNUPPAGE)
 	err := tmpl.Execute(w, data)
 	if err != nil {
 		app.error(err)
@@ -134,30 +134,36 @@ func (app *App) signupPageHandler(w http.ResponseWriter, r *http.Request) {
 
 func (app *App) signupHandler(w http.ResponseWriter, r *http.Request) {
 	loginUser := app.models.user.NewUser(app.readFormData(r))
+	templateData := templateData{"username": loginUser.Username, "password": ""}
 
 	user, err := app.models.user.Get(*loginUser)
 	if errors.Is(err, sql.ErrNoRows) {
-		app.SessionManager.Put(r.Context(), "toast", "username not found")
-		tmpl := app.PageTemplates["signin"]
-		err := tmpl.Execute(w, templateData{"username": user.Username})
+		templateData["errors"] = map[string][]string{"username": {"username not found"}}
+		tmpl := app.PageTemplates["signup"]
+		err := tmpl.Execute(w, templateData)
 		if err != nil {
 			app.error(err)
 		}
 		return
 	}
 
-	if same := helper.CompareHash(user.Password, loginUser.Password); !same {
-		app.SessionManager.Put(r.Context(), "toast", "invalid password")
-		tmpl := app.PageTemplates["signin"]
-		err := tmpl.Execute(w, templateData{"username": user.Username})
+	if same := helper.CompareHash(loginUser.Password, user.Password); !same {
+		templateData["errors"] = map[string][]string{"password": {"incorrect password"}}
+		tmpl := app.PageTemplates["signup"]
+		err := tmpl.Execute(w, templateData)
 		if err != nil {
 			app.error(err)
 		}
 		return
 	}
 
-	app.SessionManager.Put(r.Context(), "userid", user.ID)
-	http.Redirect(w, r, "/", http.StatusMovedPermanently)
+	app.SessionManager.Put(r.Context(), "userId", user.ID)
+	if !user.IsVerified {
+		http.Redirect(w, r, EMAILVERIFICATIONPAGE, http.StatusMovedPermanently)
+		return
+	}
+
+	http.Redirect(w, r, HOMEPAGE, http.StatusMovedPermanently)
 }
 
 func (app *App) notFound(w http.ResponseWriter, r *http.Request) {

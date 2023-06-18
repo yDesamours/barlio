@@ -16,6 +16,16 @@ const (
 
 type templateData map[string]interface{}
 
+type templateMap map[string]*PageTemplate
+
+func (t templateMap) Get(tmpl string) *PageTemplate {
+	if strings.EqualFold("/", tmpl) {
+		return t["/home"]
+	}
+	tmpl = tmpl[1:]
+	return t[tmpl]
+}
+
 func (app *App) newTemplateData() templateData {
 	return templateData{
 		"time":       time.Now(),
@@ -31,8 +41,8 @@ type PageTemplate struct {
 	Tmpl *template.Template
 }
 
-func appPage() (map[string]*PageTemplate, error) {
-	templates := map[string]*PageTemplate{}
+func appPage() (templateMap, error) {
+	templates := templateMap{}
 	baseTemplate := template.Must(template.ParseFS(ui.FILES, "web/html/base.tmpl.html"))
 	baseTemplate = template.Must(baseTemplate.ParseFS(ui.FILES, "web/html/partials/*"))
 
@@ -62,7 +72,7 @@ func (tmpl *PageTemplate) ExecuteTemplate(out io.Writer, name string, data templ
 	return tmpl.Tmpl.ExecuteTemplate(out, name, data)
 }
 
-func mailTemplates() (map[string]*PageTemplate, error) {
+func mailTemplates() (templateMap, error) {
 	templates := map[string]*PageTemplate{}
 	pages, err := fs.Glob(ui.FILES, "mail/*")
 	if err != nil {

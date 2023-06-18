@@ -15,9 +15,10 @@ func newRouter(app *App) http.Handler {
 
 	router.HandlerFunc(http.MethodGet, "/", app.homeHandler)
 	router.HandlerFunc(http.MethodGet, "/signin", app.signinPageHandler)
-	router.Handler(http.MethodGet, "/login", notLoggedInOnly.ThenFunc(app.signupPageHandler))
+	router.Handler(http.MethodGet, "/signup", notLoggedInOnly.ThenFunc(app.signupPageHandler))
 	router.Handler(http.MethodGet, "/emailverification", notLoggedInOnly.ThenFunc(app.emailVerificationPageHandler))
 	router.HandlerFunc(http.MethodPost, "/signin", app.signinHandler)
+	router.HandlerFunc(http.MethodPost, "/signup", app.signupHandler)
 	router.Handler(http.MethodGet, "/statics/*path", app.fileServer())
 
 	staticMiddlewares := alice.New(app.recoverMiddleware, app.SessionManager.LoadAndSave, app.getCurrentUserMiddleware)

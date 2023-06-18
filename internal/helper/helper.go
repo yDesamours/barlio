@@ -27,11 +27,11 @@ func CompareHash[T ~string](src, target T) bool {
 	return true
 }
 
-func HashPassword[T ~string](u T) (string, error) {
+func HashPassword[T ~string](u T) (T, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
 	}
 
-	return string(hashedPassword), nil
+	return T(hashedPassword), nil
 }
