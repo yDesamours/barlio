@@ -103,3 +103,8 @@ func (app *App) newVerificationToken(user *model.User) (*model.Token, error) {
 	}
 	return &token, nil
 }
+
+func (app *App) readFormData(r *http.Request) url.Values {
+	r.ParseForm()
+	return r.Form
+}

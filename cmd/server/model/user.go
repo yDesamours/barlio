@@ -8,8 +8,6 @@ import (
 	"errors"
 	"net/url"
 	"time"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -25,15 +23,6 @@ type User struct {
 	PreferedArticleCategories ListArticleCategorie
 	Bio                       types.String
 	ProfilPicture             types.String
-}
-
-func (u *User) HashPassword() error {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-	u.Password = types.String(hashedPassword)
-	return nil
 }
 
 func NullUser() User {

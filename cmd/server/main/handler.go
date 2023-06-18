@@ -2,8 +2,12 @@ package main
 
 import (
 	"barlio/cmd/server/model"
+	"barlio/internal/helper"
+	"barlio/internal/types"
 	"barlio/internal/validator"
 	"barlio/ui"
+	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"path/filepath"
@@ -59,11 +63,12 @@ func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = user.HashPassword()
+	hash, err := helper.HashPassword(user.Password)
 	if err != nil {
 		app.error(err)
 		return
 	}
+	user.Password = types.String(hash)
 
 	err = app.models.user.Insert(user)
 	if err != nil {
@@ -125,6 +130,34 @@ func (app *App) signupPageHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		app.error(err)
 	}
+}
+
+func (app *App) signupHandler(w http.ResponseWriter, r *http.Request) {
+	loginUser := app.models.user.NewUser(app.readFormData(r))
+
+	user, err := app.models.user.Get(*loginUser)
+	if errors.Is(err, sql.ErrNoRows) {
+		app.SessionManager.Put(r.Context(), "toast", "username not found")
+		tmpl := app.PageTemplates["signin"]
+		err := tmpl.Execute(w, templateData{"username": user.Username})
+		if err != nil {
+			app.error(err)
+		}
+		return
+	}
+
+	if same := helper.CompareHash(user.Password, loginUser.Password); !same {
+		app.SessionManager.Put(r.Context(), "toast", "invalid password")
+		tmpl := app.PageTemplates["signin"]
+		err := tmpl.Execute(w, templateData{"username": user.Username})
+		if err != nil {
+			app.error(err)
+		}
+		return
+	}
+
+	app.SessionManager.Put(r.Context(), "userid", user.ID)
+	http.Redirect(w, r, "/", http.StatusMovedPermanently)
 }
 
 func (app *App) notFound(w http.ResponseWriter, r *http.Request) {
