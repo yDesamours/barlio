@@ -11,7 +11,7 @@ func newRouter(app *App) http.Handler {
 	router := httprouter.New()
 	router.NotFound = http.HandlerFunc(app.notFound)
 
-	notLoggedInOnly := alice.New(app.notLoggedInOnly)
+	notLoggedInOnly := alice.New(app.notLoggedInOnlyMiddleware)
 
 	router.HandlerFunc(http.MethodGet, "/", app.homeHandler)
 	router.HandlerFunc(http.MethodGet, "/signin", app.signinPageHandler)

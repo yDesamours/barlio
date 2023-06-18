@@ -36,7 +36,7 @@ func appPage() (map[string]*PageTemplate, error) {
 	baseTemplate := template.Must(template.ParseFS(ui.FILES, "web/html/base.tmpl.html"))
 	baseTemplate = template.Must(baseTemplate.ParseFS(ui.FILES, "web/html/partials/*"))
 
-	pages, err := fs.Glob(ui.FILES, "html/pages/*.tmpl.html")
+	pages, err := fs.Glob(ui.FILES, "web/html/pages/*.tmpl.html")
 	if err != nil {
 		return nil, err
 	}

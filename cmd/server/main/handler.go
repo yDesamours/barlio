@@ -4,6 +4,7 @@ import (
 	"barlio/cmd/server/model"
 	"barlio/internal/validator"
 	"barlio/ui"
+	"fmt"
 	"net/http"
 	"path/filepath"
 	"text/template"
@@ -72,7 +73,7 @@ func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
 
 	app.SessionManager.Put(r.Context(), "userId", user.ID)
 
-	http.Redirect(w, r, "/verification", http.StatusMovedPermanently)
+	http.Redirect(w, r, "/emailverification", http.StatusMovedPermanently)
 }
 
 func (app *App) emailVerificationPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -81,6 +82,10 @@ func (app *App) emailVerificationPageHandler(w http.ResponseWriter, r *http.Requ
 	data.Set("showHeader", false)
 
 	user := app.getUser(r)
+	if user == nil {
+		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
+		return
+	}
 
 	tmpl := app.PageTemplates["emailverification"]
 	err := tmpl.Execute(w, data)
@@ -89,7 +94,7 @@ func (app *App) emailVerificationPageHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = app.models.token.DeleteForUser(user.ID, model.VerificationScope)
+	err = app.models.token.DeleteForUser(user.ID, model.EmailVerificationScope)
 	if err != nil {
 		app.error(err)
 		return
@@ -113,6 +118,7 @@ func (app *App) emailVerificationPageHandler(w http.ResponseWriter, r *http.Requ
 func (app *App) signupPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData()
 	data.Set("page", "Signup")
+	data.Set("showHeader", false)
 
 	tmpl := app.PageTemplates["signup"]
 	err := tmpl.Execute(w, data)
@@ -133,6 +139,10 @@ func (app *App) notFound(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) fileServer() http.Handler {
-	server := http.FileServer(http.FS(ui.FILES))
-	return server
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.URL.Path = fmt.Sprintf("/web%s", r.URL.Path)
+		server := http.FileServer(http.FS(ui.FILES))
+		server.ServeHTTP(w, r)
+	})
+
 }

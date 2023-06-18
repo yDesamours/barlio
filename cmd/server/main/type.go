@@ -1,7 +1,7 @@
 package main
 
-import "barlio/internal/data"
+import "barlio/internal/types"
 
 const (
-	userType data.String = "user"
+	userType types.String = "user"
 )

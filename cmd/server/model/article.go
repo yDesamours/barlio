@@ -1,9 +1,9 @@
 package model
 
 import (
-	"barlio/internal/data"
 	"barlio/internal/helper"
 	"barlio/internal/metadata"
+	"barlio/internal/types"
 	"barlio/internal/validator"
 	"context"
 	"database/sql"
@@ -14,14 +14,14 @@ import (
 
 type Article struct {
 	ID         int
-	Subject    data.String
+	Subject    types.String
 	Categories ListArticleCategorie
-	Title      data.String
-	Content    data.String
-	Gender     data.String
+	Title      types.String
+	Content    types.String
+	Gender     types.String
 	CreatedAt  time.Time
 	Author     User
-	Tags       []data.String
+	Tags       []types.String
 }
 
 type ArticleCategorie struct {
@@ -32,11 +32,11 @@ type ArticleCategorie struct {
 type ListArticleCategorie []ArticleCategorie
 
 type ArticleSearch struct {
-	Subject    data.String
-	Tags       []data.String
-	Title      data.String
+	Subject    types.String
+	Tags       []types.String
+	Title      types.String
 	CreatedAt  time.Time
-	Author     data.String
+	Author     types.String
 	PageSize   int
 	PageNumber int
 }
@@ -103,7 +103,7 @@ func (m *ArticleModel) GetById(idArticle int) (*Article, error) {
 
 func (m *ArticleModel) Get(search *ArticleSearch) ([]Article, *metadata.Metadata, error) {
 	var articles []Article
-	var data metadata.Metadata
+	var types metadata.Metadata
 	const statement = `SELECT
 							a.id, a.subject, a.tags, a.title, a.created_at
 							u.id, u.username, count(a.id) OVER()
@@ -130,7 +130,7 @@ func (m *ArticleModel) Get(search *ArticleSearch) ([]Article, *metadata.Metadata
 		var art Article
 
 		err = rows.Scan(&art.ID, &art.Subject, pq.Array(&art.Tags), &art.Title,
-			&art.CreatedAt, &art.Author.ID, &art.Author.Username, &data.TotalResult)
+			&art.CreatedAt, &art.Author.ID, &art.Author.Username, &types.TotalResult)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -141,7 +141,7 @@ func (m *ArticleModel) Get(search *ArticleSearch) ([]Article, *metadata.Metadata
 		return nil, nil, err
 	}
 
-	return articles, &data, nil
+	return articles, &types, nil
 }
 
 func (m *ArticleModel) Delete(idArticle, idAuthor int) error {

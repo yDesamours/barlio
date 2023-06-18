@@ -1,10 +1,11 @@
 package model
 
 import (
-	"barlio/internal/data"
+	"barlio/internal/types"
 	"barlio/internal/validator"
 	"context"
 	"database/sql"
+	"errors"
 	"net/url"
 	"time"
 
@@ -13,17 +14,17 @@ import (
 
 type User struct {
 	ID                        int
-	Firstname                 data.String
-	Lastname                  data.String
-	Username                  data.String
-	Email                     data.String
-	Password                  data.String
+	Firstname                 types.String
+	Lastname                  types.String
+	Username                  types.String
+	Email                     types.String
+	Password                  types.String
 	IsVerified                bool
 	JoinedAt                  time.Time
 	Birthdate                 time.Time
 	PreferedArticleCategories ListArticleCategorie
-	Bio                       data.String
-	ProfilPicture             data.String
+	Bio                       types.String
+	ProfilPicture             types.String
 }
 
 func (u *User) HashPassword() error {
@@ -31,7 +32,7 @@ func (u *User) HashPassword() error {
 	if err != nil {
 		return err
 	}
-	u.Password = data.String(hashedPassword)
+	u.Password = types.String(hashedPassword)
 	return nil
 }
 
@@ -45,41 +46,42 @@ type UserModel struct {
 
 func (m *UserModel) NewUser(form url.Values) *User {
 	user := &User{
-		Username: data.String(form.Get("username")),
-		Email:    data.String(form.Get("email")),
-		Password: data.String(form.Get("password")),
+		Username: types.String(form.Get("username")),
+		Email:    types.String(form.Get("email")),
+		Password: types.String(form.Get("password")),
 	}
 	return user
 }
 
 func (m *UserModel) Insert(u *User) error {
 	const statement = `INSERT INTO users(
-							username, password, email
-						) VALUES ($1, $2, $3) 
+							username, password, email, joined_at, isverified
+						) VALUES ($1, $2, $3, $4, $5) 
 						RETURNING id`
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	return m.DB.QueryRowContext(ctx, statement).Scan(&u.ID)
+	return m.DB.QueryRowContext(ctx, statement, u.Username, u.Password, u.Email, u.JoinedAt,
+		u.IsVerified).Scan(&u.ID)
 }
 
-func (m *UserModel) Get(u User) (*User, error) {
-	var user User
+func (m *UserModel) Get(user User) (*User, error) {
+	var u User
 	const statement = `SELECT 
 							firstname, lastname, username,  password, email, joined_at,
 							isverified
 						FROM users
 						WHERE 
-							(id = $1 || $1 = 0)
-							AND (username=$2 || $2 = '')
-							AND (email=$3 || $3 = '')`
+							(id = $1 OR $1 = 0)
+							AND (trim(username)=$2 OR $2 is null)
+							AND (trim(email)=$3 OR $3 is null);`
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	err := m.DB.QueryRowContext(ctx, statement, u.ID, u.Username, u.Email).Scan(&u.Firstname, &u.Lastname, &u.Username,
+	err := m.DB.QueryRowContext(ctx, statement, user.ID, user.Username, user.Email).Scan(&u.Firstname, &u.Lastname, &u.Username,
 		&u.Password, &u.Email, &u.JoinedAt, &u.IsVerified)
 
-	return &user, err
+	return &u, err
 }
 
 func (m *UserModel) Delete(id int) error {
@@ -128,16 +130,16 @@ func (m *UserModel) GetAll(id int) ([]User, error) {
 }
 
 func (m *UserModel) ValidateUser(u *User, validator *validator.Validator) error {
-	user, err := m.Get(User{Username: data.String(u.Username)})
-	if err != nil {
+	user, err := m.Get(User{Username: types.String(u.Username)})
+	if !errors.Is(err, sql.ErrNoRows) && err != nil {
 		return err
 	}
-	validator.Check(user == nil, "username", "username already taken")
+	validator.Check(user.Username == "", "username", "username already taken")
 
-	user, err = m.Get(User{Email: data.String(u.Email)})
-	if err != nil {
+	user, err = m.Get(User{Email: types.String(u.Email)})
+	if !errors.Is(err, sql.ErrNoRows) && err != nil {
 		return err
 	}
-	validator.Check(user == nil, "email", "email already in use")
+	validator.Check(user.Username == "", "email", "email already in use")
 	return nil
 }

@@ -2,8 +2,8 @@ package main
 
 import (
 	"barlio/cmd/server/model"
-	"barlio/internal/data"
 	"barlio/internal/token"
+	"barlio/internal/types"
 	"barlio/internal/validator"
 	"bytes"
 	"net/http"
@@ -30,8 +30,8 @@ func (app *App) ValidateUser(user *model.User, confirmedPassword string, validat
 		validator.IsEmailValid(user.Email, "email", "invalid email")
 	}
 	validator.NotEmpty(user.Password, "password", "missing password")
-	if validator.NotEmpty(data.String(confirmedPassword), "passwordconfirm", "no password confirmation") {
-		validator.Equal(user.Password, data.String(confirmedPassword), "password", "password mismatch")
+	if validator.NotEmpty(types.String(confirmedPassword), "passwordconfirm", "no password confirmation") {
+		validator.Equal(user.Password, types.String(confirmedPassword), "password", "password mismatch")
 	}
 }
 
@@ -96,7 +96,7 @@ func (app *App) newVerificationToken(user *model.User) (*model.Token, error) {
 	}
 	token := model.Token{
 		Userid:    user.ID,
-		Scope:     model.VerificationScope,
+		Scope:     model.EmailVerificationScope,
 		Token:     plainTextToken,
 		Hash:      hashedToken,
 		ExpiretAt: time.Now().Add(tokenDuration),

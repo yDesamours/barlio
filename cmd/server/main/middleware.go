@@ -21,7 +21,7 @@ func (app *App) recoverMiddleware(h http.Handler) http.Handler {
 
 func (app *App) getCurrentUserMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userId := app.SessionManager.GetInt(r.Context(), string(userType))
+		userId := app.SessionManager.GetInt(r.Context(), "userId")
 		user, err := app.models.user.Get(model.User{ID: userId})
 
 		if err != nil {
@@ -36,7 +36,7 @@ func (app *App) getCurrentUserMiddleware(h http.Handler) http.Handler {
 	})
 }
 
-func (app *App) notLoggedInOnly(h http.Handler) http.Handler {
+func (app *App) notLoggedInOnlyMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := app.getUser(r)
 		if user != nil && user.IsVerified {
