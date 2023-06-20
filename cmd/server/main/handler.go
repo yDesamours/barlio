@@ -3,7 +3,6 @@ package main
 import (
 	"barlio/cmd/server/model"
 	"barlio/internal/helper"
-	"barlio/internal/types"
 	"barlio/internal/validator"
 	"barlio/ui"
 	"database/sql"
@@ -12,13 +11,14 @@ import (
 	"net/http"
 	"path/filepath"
 	"text/template"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 func (app *App) homeHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData()
 	user := app.getUser(r)
 
-	data.Set("page", "Home")
 	data.Set("user", user)
 
 	tmpl := app.PageTemplates.Get(HOMEPAGE)
@@ -30,7 +30,6 @@ func (app *App) homeHandler(w http.ResponseWriter, r *http.Request) {
 
 func (app *App) signinPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData()
-	data.Set("page", "Signin")
 	data.Set("showHeader", false)
 
 	tmpl := app.PageTemplates.Get(SIGNINPAGE)
@@ -57,7 +56,7 @@ func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := app.models.user.ValidateUser(user, validator)
+	err := app.ValidateUserUnicity(user, validator)
 	if err != nil {
 		app.error(err)
 		return
@@ -68,7 +67,7 @@ func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
 		app.error(err)
 		return
 	}
-	user.Password = types.String(hash)
+	user.Password = hash
 
 	err = app.models.user.Insert(user)
 	if err != nil {
@@ -81,14 +80,13 @@ func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, EMAILVERIFICATIONPAGE, http.StatusMovedPermanently)
 }
 
-func (app *App) emailVerificationPageHandler(w http.ResponseWriter, r *http.Request) {
+func (app *App) emailVerificationHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData()
-	data.Set("page", "emailverification")
 	data.Set("showHeader", false)
 
 	user := app.getUser(r)
 	if user == nil {
-		http.Redirect(w, r, SIGNINPAGE, http.StatusMovedPermanently)
+		http.Redirect(w, r, SIGNUPPAGE, http.StatusMovedPermanently)
 		return
 	}
 
@@ -163,6 +161,43 @@ func (app *App) signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	http.Redirect(w, r, HOMEPAGE, http.StatusMovedPermanently)
+}
+
+func (app *App) verifyEmailHandler(w http.ResponseWriter, r *http.Request) {
+	tokenString := httprouter.ParamsFromContext(r.Context()).ByName("token")
+
+	if tokenString == "" {
+		http.Redirect(w, r, EMAILVERIFICATIONPAGE, http.StatusMovedPermanently)
+		return
+	}
+
+	user := app.getUser(r)
+	if user == nil {
+		http.Redirect(w, r, SIGNUPPAGE, http.StatusMovedPermanently)
+		return
+	}
+
+	userToken, err := app.models.token.GetForUser(user.ID, model.EmailVerificationScope)
+	if errors.Is(err, sql.ErrNoRows) {
+		http.Redirect(w, r, EMAILVERIFICATIONPAGE, http.StatusMovedPermanently)
+		return
+	}
+
+	validator := validator.New()
+	app.validateToken(userToken, tokenString, validator)
+	if !validator.Valid() {
+		validator.Error()
+		return
+	}
+
+	err = app.models.user.Activate(user)
+	if err != nil {
+		app.error(err)
+		return
+	}
+
+	app.SessionManager.Put(r.Context(), "flash", "accountVerified")
 	http.Redirect(w, r, HOMEPAGE, http.StatusMovedPermanently)
 }
 

@@ -6,6 +6,8 @@ import (
 	"barlio/internal/types"
 	"barlio/internal/validator"
 	"bytes"
+	"database/sql"
+	"errors"
 	"net/http"
 	"net/url"
 	"time"
@@ -45,19 +47,23 @@ func (app *App) signInError(w http.ResponseWriter, data templateData, form url.V
 	return tmpl.Execute(w, data)
 }
 
-func (app *App) sendVerificationEmail(user *model.User, token *model.Token) error {
+func (app *App) sendVerificationEmail(user *model.User, token *model.Token) {
 	var (
-		data         = templateData{}
-		mailTemplate = app.MailTemplate["emailverification"]
+		data         = templateData{"token": token.Token}
+		mailTemplate = app.MailTemplate.Get("/emailverification")
 	)
 
 	mailObject, err := parseEmailData(mailTemplate, data)
 	if err != nil {
-		return err
+		app.error(err)
+		return
 	}
 	app.Mailer.Send(string(user.Email), mailObject)
+}
 
-	return nil
+func (app *App) validateToken(userToken *model.Token, tokenString string, validator *validator.Validator) {
+	validator.Check(userToken.ExpiretAt.After(time.Now()), "token", "token has expired")
+	validator.Check(token.CompareToken(tokenString, userToken.Hash), "token", "token is invalid")
 }
 
 func parseEmailData(mailTemplate *PageTemplate, data templateData) (map[string]string, error) {
@@ -87,6 +93,21 @@ func parseEmailData(mailTemplate *PageTemplate, data templateData) (map[string]s
 	mailObject["body"] = buffer.String()
 
 	return mailObject, nil
+}
+
+func (app *App) ValidateUserUnicity(u *model.User, validator *validator.Validator) error {
+	user, err := app.models.user.Get(model.User{Username: types.String(u.Username)})
+	if !errors.Is(err, sql.ErrNoRows) && err != nil {
+		return err
+	}
+	validator.Check(user.Username == "", "username", "username already taken")
+
+	user, err = app.models.user.Get(model.User{Email: types.String(u.Email)})
+	if !errors.Is(err, sql.ErrNoRows) && err != nil {
+		return err
+	}
+	validator.Check(user.Username == "", "email", "email already in use")
+	return nil
 }
 
 func (app *App) newVerificationToken(user *model.User) (*model.Token, error) {

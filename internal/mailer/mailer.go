@@ -17,17 +17,17 @@ func NewMailer(port int, host, username, password, sender string) *Mailer {
 }
 
 func (m *Mailer) Send(receiver string, infos map[string]string) (err error) {
-	msg := mail.Message{}
+	msg := mail.NewMessage()
 
 	msg.SetBody("text/html", infos["body"])
 	msg.AddAlternative("text/plain", infos["alternative"])
 	msg.SetHeader("From", m.sender)
-	msg.SetHeader("To", infos["to"])
-	msg.SetHeader("Subject", infos["Subject"])
+	msg.SetHeader("To", receiver)
+	msg.SetHeader("Subject", infos["subject"])
 
 	for i := 0; i < 3; i++ {
-		err = m.dialer.DialAndSend(&msg)
-		if err != nil {
+		err = m.dialer.DialAndSend(msg)
+		if err == nil {
 			break
 		}
 	}

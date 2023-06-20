@@ -2,10 +2,8 @@ package model
 
 import (
 	"barlio/internal/types"
-	"barlio/internal/validator"
 	"context"
 	"database/sql"
-	"errors"
 	"net/url"
 	"time"
 )
@@ -118,17 +116,14 @@ func (m *UserModel) GetAll(id int) ([]User, error) {
 	return users, nil
 }
 
-func (m *UserModel) ValidateUser(u *User, validator *validator.Validator) error {
-	user, err := m.Get(User{Username: types.String(u.Username)})
-	if !errors.Is(err, sql.ErrNoRows) && err != nil {
-		return err
-	}
-	validator.Check(user.Username == "", "username", "username already taken")
+func (m *UserModel) Activate(u *User) error {
+	const statement = `UPDATE users
+						SET isverified=true
+						WHERE id=$1`
 
-	user, err = m.Get(User{Email: types.String(u.Email)})
-	if !errors.Is(err, sql.ErrNoRows) && err != nil {
-		return err
-	}
-	validator.Check(user.Username == "", "email", "email already in use")
-	return nil
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	_, err := m.DB.ExecContext(ctx, statement, u.ID)
+	return err
 }

@@ -14,7 +14,7 @@ type Token struct {
 	Userid    int
 	Token     string
 	Scope     string
-	Hash      string
+	Hash      []byte
 	ExpiretAt time.Time
 }
 
@@ -27,7 +27,7 @@ func (t *TokenModel) Insert(token *Token) error {
 							(userid, scope, hash, expire_at)
 						VALUES($1, $2, $3, $4)`
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	_, err := t.DB.ExecContext(ctx, statement, token.Userid, token.Scope, token.Hash, token.ExpiretAt)
@@ -42,7 +42,7 @@ func (t *TokenModel) DeleteExpired() error {
 	const statement = `DELETE FROM tokens 
 						WHERE expired_at < $1`
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	_, err := t.DB.ExecContext(ctx, statement, time.Now().Format("2006-01-02"))
@@ -56,7 +56,7 @@ func (t *TokenModel) DeleteForUser(userId int, scope string) error {
 	const statement = `DELETE FROM tokens 
 						WHERE userid=$1 AND scope=$2`
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	_, err := t.DB.ExecContext(ctx, statement, userId, scope)
@@ -64,4 +64,17 @@ func (t *TokenModel) DeleteForUser(userId int, scope string) error {
 		return err
 	}
 	return nil
+}
+
+func (t *TokenModel) GetForUser(idUser int, scope string) (*Token, error) {
+	var token Token
+	const statement = `SELECT hash, expire_at
+						FROM tokens
+						WHERE userid=$1 AND scope=$2`
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	err := t.DB.QueryRowContext(ctx, statement, idUser, scope).Scan(&token.Hash, &token.ExpiretAt)
+	return &token, err
 }
