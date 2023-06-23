@@ -20,7 +20,7 @@ type templateMap map[string]*PageTemplate
 
 func (t templateMap) Get(tmpl string) *PageTemplate {
 	if strings.EqualFold("/", tmpl) {
-		return t["/home"]
+		return t["home"]
 	}
 	tmpl = tmpl[1:]
 	return t[tmpl]

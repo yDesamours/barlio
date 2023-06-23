@@ -13,12 +13,14 @@ func newRouter(app *App) http.Handler {
 
 	notLoggedInOnly := alice.New(app.notLoggedInOnlyMiddleware)
 
-	router.HandlerFunc(http.MethodGet, "/", app.homeHandler)
+	router.HandlerFunc(http.MethodGet, "/", app.homePageHandler)
 	router.HandlerFunc(http.MethodGet, "/signin", app.signinPageHandler)
 	router.Handler(http.MethodGet, "/signup", notLoggedInOnly.ThenFunc(app.signupPageHandler))
 	router.Handler(http.MethodGet, "/emailverification", notLoggedInOnly.ThenFunc(app.emailVerificationHandler))
 	router.HandlerFunc(http.MethodPost, "/signin", app.signinHandler)
 	router.HandlerFunc(http.MethodPost, "/signup", app.signupHandler)
+	router.HandlerFunc(http.MethodPut, "/emailconfirm", app.confirmEmailHandler)
+	router.HandlerFunc(http.MethodGet, "/logout", app.logoutHandler)
 	router.Handler(http.MethodGet, "/statics/*path", app.fileServer())
 
 	staticMiddlewares := alice.New(app.recoverMiddleware, app.SessionManager.LoadAndSave, app.getCurrentUserMiddleware)

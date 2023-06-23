@@ -58,7 +58,7 @@ func (app *App) sendVerificationEmail(user *model.User, token *model.Token) {
 		app.error(err)
 		return
 	}
-	app.Mailer.Send(string(user.Email), mailObject)
+	go app.Mailer.Send(string(user.Email), mailObject)
 }
 
 func (app *App) validateToken(userToken *model.Token, tokenString string, validator *validator.Validator) {

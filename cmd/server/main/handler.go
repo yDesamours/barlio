@@ -11,15 +11,16 @@ import (
 	"net/http"
 	"path/filepath"
 	"text/template"
-
-	"github.com/julienschmidt/httprouter"
 )
 
-func (app *App) homeHandler(w http.ResponseWriter, r *http.Request) {
+func (app *App) homePageHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData()
 	user := app.getUser(r)
 
+	data.Set("page", HOMEPAGE)
 	data.Set("user", user)
+
+	app.SessionManager.Put(r.Context(), "lastpage", HOMEPAGE)
 
 	tmpl := app.PageTemplates.Get(HOMEPAGE)
 	err := tmpl.Execute(w, data)
@@ -31,6 +32,8 @@ func (app *App) homeHandler(w http.ResponseWriter, r *http.Request) {
 func (app *App) signinPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData()
 	data.Set("showHeader", false)
+
+	app.SessionManager.Put(r.Context(), "lastpage", SIGNINPAGE)
 
 	tmpl := app.PageTemplates.Get(SIGNINPAGE)
 	err := tmpl.Execute(w, data)
@@ -90,6 +93,8 @@ func (app *App) emailVerificationHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	app.SessionManager.Put(r.Context(), "lastpage", EMAILVERIFICATIONPAGE)
+
 	tmpl := app.PageTemplates.Get(EMAILVERIFICATIONPAGE)
 	err := tmpl.Execute(w, data)
 	if err != nil {
@@ -122,6 +127,8 @@ func (app *App) signupPageHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData()
 	data.Set("page", "Signup")
 	data.Set("showHeader", false)
+
+	app.SessionManager.Put(r.Context(), "lastpage", SIGNUPPAGE)
 
 	tmpl := app.PageTemplates.Get(SIGNUPPAGE)
 	err := tmpl.Execute(w, data)
@@ -164,8 +171,8 @@ func (app *App) signupHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, HOMEPAGE, http.StatusMovedPermanently)
 }
 
-func (app *App) verifyEmailHandler(w http.ResponseWriter, r *http.Request) {
-	tokenString := httprouter.ParamsFromContext(r.Context()).ByName("token")
+func (app *App) confirmEmailHandler(w http.ResponseWriter, r *http.Request) {
+	tokenString := r.URL.Query().Get("token")
 
 	if tokenString == "" {
 		http.Redirect(w, r, EMAILVERIFICATIONPAGE, http.StatusMovedPermanently)
@@ -197,8 +204,23 @@ func (app *App) verifyEmailHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.SessionManager.Put(r.Context(), "flash", "accountVerified")
+	app.SessionManager.Put(r.Context(), "flash", "Account Verified")
 	http.Redirect(w, r, HOMEPAGE, http.StatusMovedPermanently)
+}
+
+func (app *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData()
+	data.Set("page", HOMEPAGE)
+
+	err := app.SessionManager.RenewToken(r.Context())
+	if err != nil {
+		app.error(err)
+		return
+	}
+	i := app.SessionManager.Pop(r.Context(), "userId")
+	fmt.Println(i)
+	http.Redirect(w, r, HOMEPAGE, http.StatusMovedPermanently)
+
 }
 
 func (app *App) notFound(w http.ResponseWriter, r *http.Request) {
@@ -208,8 +230,7 @@ func (app *App) notFound(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-
-	temp.Execute(w, nil)
+	temp.Execute(w, templateData{})
 }
 
 func (app *App) fileServer() http.Handler {
