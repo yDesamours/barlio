@@ -147,3 +147,10 @@ func (app *App) validateUpdateUserProfileInfosHelper(form url.Values, validator 
 }
 
 func (app *App) listArticleCategorieHelper()
+
+func (app *App) validateChangeUserPassword(user *model.User, form url.Values, validator *validator.Validator) {
+	validator.NotEmpty(types.String(form.Get("password")), "password", "password can't be empty")
+	validator.NotEmpty(types.String(form.Get("passwordconfirm")), "passwordconfirm", "confirm your password")
+	validator.Equal(types.String(form.Get("password")), types.String(form.Get("passwordconfirm")), "password", "password don't match")
+
+}
