@@ -10,6 +10,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -130,10 +131,19 @@ func (app *App) readFormData(r *http.Request) url.Values {
 	return r.Form
 }
 
-func (app *App) updateUserHelper(user *model.User, form url.Values) {
+func (app *App) updateUserProfilInfosHelper(user *model.User, form url.Values) {
 	user.Firstname = types.String(form.Get("firstname"))
 	user.Lastname = types.String(form.Get("lastname"))
 	user.Bio = types.String(form.Get("bio"))
 	birthdate, _ := time.Parse(time.DateOnly, form.Get("birhtdate"))
 	user.Birthdate = birthdate
+	user.PreferedArticleCategories = model.ListArticleCategorie(strings.Split(form.Get("preferedarticlecategories"), ","))
 }
+
+func (app *App) validateUpdateUserProfileInfosHelper(form url.Values, validator *validator.Validator) {
+	_, err := time.Parse(time.DateOnly, form.Get("birthday"))
+	validator.Check(err != nil, "birthday", "date is invalid")
+
+}
+
+func (app *App) listArticleCategorieHelper()

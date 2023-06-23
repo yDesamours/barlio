@@ -232,6 +232,13 @@ func (app *App) updateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *App) changeUserPasswordHandler(w http.ResponseController, r *http.Request) {
+	form := app.readFormData(r)
+	user := app.getUser(r)
+	validator := validator.New()
+
+}
+
 func (app *App) notFound(w http.ResponseWriter, r *http.Request) {
 	notFoundPath := filepath.Join("web", "html", "notFound.tmpl.html")
 	temp, err := template.ParseFiles(notFoundPath)
