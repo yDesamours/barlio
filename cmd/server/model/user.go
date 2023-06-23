@@ -6,6 +6,8 @@ import (
 	"database/sql"
 	"net/url"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 type User struct {
@@ -28,7 +30,11 @@ func NullUser() User {
 }
 
 type UserModel struct {
-	DB *sql.DB
+	db *sql.DB
+}
+
+func (u *UserModel) SetDB(db *sql.DB) {
+	u.db = db
 }
 
 func (m *UserModel) NewUser(form url.Values) *User {
@@ -48,11 +54,14 @@ func (m *UserModel) Insert(u *User) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	return m.DB.QueryRowContext(ctx, statement, u.Username, u.Password, u.Email, u.JoinedAt,
+	return m.db.QueryRowContext(ctx, statement, u.Username, u.Password, u.Email, u.JoinedAt,
 		u.IsVerified).Scan(&u.ID)
 }
 
 func (m *UserModel) Get(user User) (*User, error) {
+	if user.IsNull() {
+		return nil, nil
+	}
 	var u User
 	const statement = `SELECT 
 							id, firstname, lastname, username,  password, email, joined_at,
@@ -65,7 +74,7 @@ func (m *UserModel) Get(user User) (*User, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	err := m.DB.QueryRowContext(ctx, statement, user.ID, user.Username, user.Email).Scan(&u.ID, &u.Firstname, &u.Lastname, &u.Username,
+	err := m.db.QueryRowContext(ctx, statement, user.ID, user.Username, user.Email).Scan(&u.ID, &u.Firstname, &u.Lastname, &u.Username,
 		&u.Password, &u.Email, &u.JoinedAt, &u.IsVerified)
 
 	return &u, err
@@ -81,7 +90,7 @@ func (m *UserModel) Delete(id int) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	return m.DB.QueryRowContext(ctx, statement, id).Scan(&id)
+	return m.db.QueryRowContext(ctx, statement, id).Scan(&id)
 }
 
 func (m *UserModel) GetAll(id int) ([]User, error) {
@@ -94,7 +103,7 @@ func (m *UserModel) GetAll(id int) ([]User, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	rows, err := m.DB.QueryContext(ctx, statement)
+	rows, err := m.db.QueryContext(ctx, statement)
 	if err != nil {
 		return nil, err
 	}
@@ -124,6 +133,31 @@ func (m *UserModel) Activate(u *User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	_, err := m.DB.ExecContext(ctx, statement, u.ID)
+	_, err := m.db.ExecContext(ctx, statement, u.ID)
 	return err
+}
+
+func (m *UserModel) UpdateUser(user *User) error {
+	const statement = `UPDATE users
+						SET 
+							firstname=$1, lastname=$2, birthdate=$3, bio=$4,
+							PreferedArticleCategories=$5
+						WHERE id=$6`
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	_, err := m.db.ExecContext(ctx, statement, user.Firstname, user.Lastname, user.Birthdate,
+		user.Bio, pq.Array(user.PreferedArticleCategories))
+
+	return err
+}
+
+func (u User) IsNull() bool {
+	var isNull bool = true
+
+	isNull = isNull && u.ID == 0 && u.Username == "" && u.Email == ""
+	isNull = isNull && u.Firstname == "" && u.Lastname == ""
+
+	return isNull
 }

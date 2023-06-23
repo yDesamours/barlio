@@ -35,8 +35,11 @@ func main() {
 	defer db.Close()
 	app.setDB(db)
 
+	user := &model.UserModel{}
+	user.SetDB(db)
+
 	app.models = &models{
-		user:    &model.UserModel{DB: db},
+		user:    user,
 		article: &model.ArticleModel{DB: db},
 		token:   &model.TokenModel{DB: db},
 	}

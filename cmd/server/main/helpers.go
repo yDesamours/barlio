@@ -129,3 +129,11 @@ func (app *App) readFormData(r *http.Request) url.Values {
 	r.ParseForm()
 	return r.Form
 }
+
+func (app *App) updateUserHelper(user *model.User, form url.Values) {
+	user.Firstname = types.String(form.Get("firstname"))
+	user.Lastname = types.String(form.Get("lastname"))
+	user.Bio = types.String(form.Get("bio"))
+	birthdate, _ := time.Parse(time.DateOnly, form.Get("birhtdate"))
+	user.Birthdate = birthdate
+}

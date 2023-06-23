@@ -220,7 +220,16 @@ func (app *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	i := app.SessionManager.Pop(r.Context(), "userId")
 	fmt.Println(i)
 	http.Redirect(w, r, HOMEPAGE, http.StatusMovedPermanently)
+}
 
+func (app *App) updateUserHandler(w http.ResponseWriter, r *http.Request) {
+	form := app.readFormData(r)
+	user := app.getUser(r)
+
+	err := app.models.user.UpdateUser(user)
+	if err != nil {
+		app.error(err)
+	}
 }
 
 func (app *App) notFound(w http.ResponseWriter, r *http.Request) {
