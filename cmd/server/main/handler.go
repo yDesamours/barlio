@@ -14,11 +14,10 @@ import (
 )
 
 func (app *App) homePageHandler(w http.ResponseWriter, r *http.Request) {
-	data := app.newTemplateData()
-	user := app.getUser(r)
+	user := app.getUserHelper(r)
+	data := app.newTemplateData(user)
 
 	data.Set("page", HOMEPAGE)
-	data.Set("user", user)
 
 	app.SessionManager.Put(r.Context(), "lastpage", HOMEPAGE)
 
@@ -30,7 +29,7 @@ func (app *App) homePageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) signinPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := app.newTemplateData()
+	data := app.newTemplateData(nil)
 	data.Set("showHeader", false)
 
 	app.SessionManager.Put(r.Context(), "lastpage", SIGNINPAGE)
@@ -43,14 +42,13 @@ func (app *App) signinPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	form := r.PostForm
-	infos := app.newTemplateData()
+	form := app.readFormDataHelper(r)
+	infos := app.newTemplateData(nil)
 
 	user := app.models.user.NewUser(form)
 
 	validator := validator.New()
-	app.ValidateUser(user, form.Get("passwordconfirm"), validator)
+	app.validateUser(user, form.Get("passwordconfirm"), validator)
 	if !validator.Valid() {
 		err := app.signInError(w, infos, form, validator)
 		if err != nil {
@@ -59,7 +57,7 @@ func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := app.ValidateUserUnicity(user, validator)
+	err := app.validateUserUnicity(user, validator)
 	if err != nil {
 		app.error(err)
 		return
@@ -84,10 +82,10 @@ func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) emailVerificationHandler(w http.ResponseWriter, r *http.Request) {
-	data := app.newTemplateData()
+	data := app.newTemplateData(nil)
 	data.Set("showHeader", false)
 
-	user := app.getUser(r)
+	user := app.getUserHelper(r)
 	if user == nil {
 		http.Redirect(w, r, SIGNUPPAGE, http.StatusMovedPermanently)
 		return
@@ -102,7 +100,7 @@ func (app *App) emailVerificationHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = app.models.token.DeleteForUser(user.ID, model.EmailVerificationScope)
+	err = app.models.token.DeleteForUser(user.ID, model.EMAILVERIFICATIONSCOPE)
 	if err != nil {
 		app.error(err)
 		return
@@ -124,7 +122,7 @@ func (app *App) emailVerificationHandler(w http.ResponseWriter, r *http.Request)
 }
 
 func (app *App) signupPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := app.newTemplateData()
+	data := app.newTemplateData(nil)
 	data.Set("page", "Signup")
 	data.Set("showHeader", false)
 
@@ -138,7 +136,7 @@ func (app *App) signupPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) signupHandler(w http.ResponseWriter, r *http.Request) {
-	loginUser := app.models.user.NewUser(app.readFormData(r))
+	loginUser := app.models.user.NewUser(app.readFormDataHelper(r))
 	templateData := templateData{"username": loginUser.Username, "password": ""}
 
 	user, err := app.models.user.Get(*loginUser)
@@ -179,13 +177,13 @@ func (app *App) confirmEmailHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := app.getUser(r)
+	user := app.getUserHelper(r)
 	if user == nil {
 		http.Redirect(w, r, SIGNUPPAGE, http.StatusMovedPermanently)
 		return
 	}
 
-	userToken, err := app.models.token.GetForUser(user.ID, model.EmailVerificationScope)
+	userToken, err := app.models.token.GetForUser(user.ID, model.EMAILVERIFICATIONSCOPE)
 	if errors.Is(err, sql.ErrNoRows) {
 		http.Redirect(w, r, EMAILVERIFICATIONPAGE, http.StatusMovedPermanently)
 		return
@@ -209,7 +207,7 @@ func (app *App) confirmEmailHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
-	data := app.newTemplateData()
+	data := app.newTemplateData(nil)
 	data.Set("page", HOMEPAGE)
 
 	err := app.SessionManager.RenewToken(r.Context())
@@ -217,25 +215,54 @@ func (app *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
 		app.error(err)
 		return
 	}
-	i := app.SessionManager.Pop(r.Context(), "userId")
-	fmt.Println(i)
+	app.SessionManager.Remove(r.Context(), "userId")
 	http.Redirect(w, r, HOMEPAGE, http.StatusMovedPermanently)
 }
 
-func (app *App) updateUserHandler(w http.ResponseWriter, r *http.Request) {
-	form := app.readFormData(r)
-	user := app.getUser(r)
+// func (app *App) updateUserHandler(w http.ResponseWriter, r *http.Request) {
+// 	form := app.readFormDataHelper(r)
+// 	user := app.getUserHelper(r)
 
-	err := app.models.user.UpdateUser(user)
-	if err != nil {
-		app.error(err)
-	}
+// 	err := app.models.user.UpdateUser(user)
+// 	if err != nil {
+// 		app.error(err)
+// 	}
+// }
+
+func (app *App) changeUserPasswordPageHandler(w http.ResponseWriter, r *http.Request) {
+	user := app.getUserHelper(r)
+	data := app.newTemplateData(user)
+	tmpl := app.PageTemplates.Get(SECURITY)
+	tmpl.Execute(w, data)
 }
 
-func (app *App) changeUserPasswordHandler(w http.ResponseController, r *http.Request) {
-	form := app.readFormData(r)
-	user := app.getUser(r)
+func (app *App) changeUserPasswordHandler(w http.ResponseWriter, r *http.Request) {
+	form := app.readFormDataHelper(r)
+	user := app.getUserHelper(r)
 	validator := validator.New()
+	data := app.newTemplateData(user)
+	tmpl := app.PageTemplates.Get(SECURITY)
+
+	app.validateChangeUserPasswordForm(form, validator)
+	if !validator.Valid() {
+		data["errors"] = validator.Error()
+		tmpl.Execute(w, data)
+		return
+	}
+
+	token, err := app.newPasswordChangeToken(user)
+	if err != nil {
+		app.error(err)
+		return
+	}
+	err = app.models.token.Insert(token)
+	if err != nil {
+		app.error(err)
+		return
+	}
+
+	data.Set("token", token.Token)
+	tmpl.Execute(w, data)
 
 }
 

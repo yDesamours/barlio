@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	EmailVerificationScope = "email_verification"
+	EMAILVERIFICATIONSCOPE = "email_verification"
+	PASSWORDCHANGESCOPE    = "password_change"
 )
 
 type Token struct {

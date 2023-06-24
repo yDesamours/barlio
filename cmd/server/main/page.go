@@ -5,4 +5,5 @@ const (
 	SIGNINPAGE            = "/signin"
 	SIGNUPPAGE            = "/signup"
 	EMAILVERIFICATIONPAGE = "/emailverification"
+	SECURITY              = "/settings/security"
 )
