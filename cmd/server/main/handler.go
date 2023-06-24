@@ -6,6 +6,7 @@ import (
 	"barlio/internal/validator"
 	"barlio/ui"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -190,7 +191,7 @@ func (app *App) confirmEmailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	validator := validator.New()
-	app.validateToken(userToken, tokenString, validator)
+	app.validateTokenHelper(userToken, tokenString, validator)
 	if !validator.Valid() {
 		validator.Error()
 		return
@@ -263,6 +264,59 @@ func (app *App) changeUserPasswordHandler(w http.ResponseWriter, r *http.Request
 
 	data.Set("token", token.Token)
 	tmpl.Execute(w, data)
+
+}
+
+func (app *App) confirmPasswordChangeHandler(w http.ResponseWriter, r *http.Request) {
+	form := app.readFormDataHelper(r)
+	user := app.getUserHelper(r)
+	validator := validator.New()
+
+	changePasswordStruct := app.changePasswordConfirmStruct(form)
+
+	token, err := app.models.token.GetForUser(user.ID, model.PASSWORDCHANGESCOPE)
+	if err != nil {
+		app.error(err)
+		return
+	}
+
+	app.validateTokenHelper(token, string(changePasswordStruct.token), validator)
+	if !validator.Valid() {
+		return
+	}
+
+	request, err := app.models.request.GetForUser(user.ID, model.PASSWORDCHANGESCOPE)
+	if err != nil {
+		app.error(err)
+		return
+	}
+
+	var cpRequest changePasswordRequest
+	err = json.Unmarshal(request.Data, &cpRequest)
+	if err != nil {
+		app.error(err)
+		return
+	}
+
+	app.models.request.DeleteForUser(user.ID, model.PASSWORDCHANGESCOPE)
+	if err != nil {
+		app.error(err)
+		return
+	}
+
+	app.models.token.DeleteForUser(user.ID, model.PASSWORDCHANGESCOPE)
+	if err != nil {
+		app.error(err)
+		return
+	}
+
+	err = app.models.user.UpdateUserPassword(user)
+	if err != nil {
+		app.error(err)
+		return
+	}
+
+	http.Redirect(w, r, SECURITY, http.StatusMovedPermanently)
 
 }
 

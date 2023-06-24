@@ -26,7 +26,6 @@ func (app *App) getCurrentUserMiddleware(h http.Handler) http.Handler {
 
 		if err != nil {
 			app.error(err)
-			*user = model.NullUser()
 		}
 
 		ctx := context.WithValue(r.Context(), userType, user)

@@ -2,7 +2,6 @@ package main
 
 import (
 	"barlio/cmd/server/model"
-	"barlio/internal/token"
 	"barlio/internal/types"
 	"barlio/internal/validator"
 	"database/sql"
@@ -35,11 +34,6 @@ func (app *App) validateUserUnicity(u *model.User, validator *validator.Validato
 	}
 	validator.Check(user.Username == "", "email", "email already in use")
 	return nil
-}
-
-func (app *App) validateToken(userToken *model.Token, tokenString string, validator *validator.Validator) {
-	validator.Check(userToken.ExpiretAt.After(time.Now()), "token", "token has expired")
-	validator.Check(token.CompareToken(tokenString, userToken.Hash), "token", "token is invalid")
 }
 
 func (app *App) validateUser(user *model.User, confirmedPassword string, validator *validator.Validator) {

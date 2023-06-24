@@ -12,7 +12,7 @@ const (
 )
 
 type Token struct {
-	Userid    int
+	UserId    int
 	Token     string
 	Scope     string
 	Hash      []byte
@@ -31,7 +31,7 @@ func (t *TokenModel) Insert(token *Token) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	_, err := t.DB.ExecContext(ctx, statement, token.Userid, token.Scope, token.Hash, token.ExpiretAt)
+	_, err := t.DB.ExecContext(ctx, statement, token.UserId, token.Scope, token.Hash, token.ExpiretAt)
 	if err != nil {
 		return err
 	}

@@ -6,7 +6,11 @@ const (
 	userType types.String = "user"
 )
 
-type changePassword struct {
-	Password       types.String
-	PassordConfirm types.String
+type changePasswordRequest struct {
+	Password string
+}
+
+type changePasswordConfirm struct {
+	Password types.String
+	token    types.String
 }

@@ -25,10 +25,6 @@ type User struct {
 	ProfilPicture             types.String
 }
 
-func NullUser() User {
-	return User{}
-}
-
 type UserModel struct {
 	db *sql.DB
 }
@@ -160,4 +156,16 @@ func (u User) IsNull() bool {
 	isNull = isNull && u.Firstname == "" && u.Lastname == ""
 
 	return isNull
+}
+
+func (m *UserModel) UpdateUserPassword(user *User) error {
+	const statement = `UPDATE users
+						SET password=$1
+						WHERE id=$1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	_, err := m.db.ExecContext(ctx, statement, user.Password, user.ID)
+	return err
 }

@@ -28,6 +28,7 @@ type models struct {
 	user    *model.UserModel
 	article *model.ArticleModel
 	token   *model.TokenModel
+	request *model.RequestModel
 }
 
 type Config struct {

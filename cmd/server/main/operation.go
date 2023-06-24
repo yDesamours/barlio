@@ -75,7 +75,7 @@ func (app *App) newVerificationToken(user *model.User) (*model.Token, error) {
 		return nil, err
 	}
 	token := model.Token{
-		Userid:    user.ID,
+		UserId:    user.ID,
 		Scope:     model.EMAILVERIFICATIONSCOPE,
 		Token:     plainTextToken,
 		Hash:      hashedToken,
@@ -99,11 +99,15 @@ func (app *App) newPasswordChangeToken(user *model.User) (*model.Token, error) {
 	}
 
 	token := model.Token{
-		Userid:    user.ID,
+		UserId:    user.ID,
 		Scope:     model.PASSWORDCHANGESCOPE,
 		Token:     plainTextToken,
 		Hash:      hashedToken,
 		ExpiretAt: time.Now().Add(passwordChangeTokenDuration),
 	}
 	return &token, nil
+}
+
+func (app *App) changePasswordConfirmStruct(form url.Values) *changePasswordConfirm {
+	return &changePasswordConfirm{Password: types.String(form.Get("password")), token: types.String(form.Get("token"))}
 }
