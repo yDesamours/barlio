@@ -54,6 +54,7 @@ func (m *UserModel) Insert(u *User) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
+
 	return m.db.QueryRowContext(ctx, statement, u.Username, u.Password, u.Email, u.JoinedAt,
 		u.IsVerified).Scan(&u.ID)
 }
