@@ -26,7 +26,6 @@ func (app *App) getCurrentUserMiddleware(h http.Handler) http.Handler {
 
 		if err != nil {
 			app.error(err)
-			*user = model.NullUser()
 		}
 
 		ctx := context.WithValue(r.Context(), userType, user)
@@ -38,7 +37,7 @@ func (app *App) getCurrentUserMiddleware(h http.Handler) http.Handler {
 
 func (app *App) notLoggedInOnlyMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := app.getUser(r)
+		user := app.getUserHelper(r)
 		if user != nil && user.IsVerified {
 			http.Redirect(w, r, "/", http.StatusMovedPermanently)
 			return

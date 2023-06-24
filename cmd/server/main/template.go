@@ -1,6 +1,7 @@
 package main
 
 import (
+	"barlio/cmd/server/model"
 	"barlio/ui"
 	"html/template"
 	"io"
@@ -19,17 +20,18 @@ type templateData map[string]interface{}
 type templateMap map[string]*PageTemplate
 
 func (t templateMap) Get(tmpl string) *PageTemplate {
-	if strings.EqualFold("/", tmpl) {
+	if strings.Compare("/", tmpl) == 0 {
 		return t["home"]
 	}
-	tmpl = tmpl[1:]
+	tmpl = tmpl[strings.LastIndex(tmpl, "/")+1:]
 	return t[tmpl]
 }
 
-func (app *App) newTemplateData() templateData {
+func (app *App) newTemplateData(user *model.User) templateData {
 	return templateData{
 		"time":       time.Now(),
 		"showHeader": true,
+		"user":       user,
 	}
 }
 
