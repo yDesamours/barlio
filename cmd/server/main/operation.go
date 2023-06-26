@@ -2,10 +2,12 @@ package main
 
 import (
 	"barlio/cmd/server/model"
+	"barlio/internal/helper"
 	"barlio/internal/token"
 	"barlio/internal/types"
 	"barlio/internal/validator"
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/url"
 	"time"
@@ -106,6 +108,34 @@ func (app *App) newPasswordChangeToken(user *model.User) (*model.Token, error) {
 		ExpiretAt: time.Now().Add(passwordChangeTokenDuration),
 	}
 	return &token, nil
+}
+
+func (app *App) newUser(form url.Values) *model.User {
+	user := &model.User{
+		Username: types.String(form.Get("username")),
+		Email:    types.String(form.Get("email")),
+		Password: types.String(form.Get("password")),
+	}
+	return user
+}
+
+func (app *App) newPasswordChangeRequest(user *model.User, form url.Values, token *model.Token) (*model.Request, error) {
+	password, err := helper.HashPassword(form.Get("password"))
+	if err != nil {
+		return nil, err
+	}
+	b, err := json.Marshal(map[string]string{"password": password})
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Request{
+		UserId:    user.ID,
+		Scope:     model.PASSWORDCHANGESCOPE,
+		CreatedAt: time.Now(),
+		ExpireAt:  token.ExpiretAt,
+		Data:      b,
+	}, nil
 }
 
 func (app *App) changePasswordConfirmStruct(form url.Values) *changePasswordConfirm {

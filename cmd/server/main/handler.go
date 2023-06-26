@@ -42,11 +42,11 @@ func (app *App) signinPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
+func (app *App) signupHandler(w http.ResponseWriter, r *http.Request) {
 	form := app.readFormDataHelper(r)
 	infos := app.newTemplateData(nil)
 
-	user := app.models.user.NewUser(form)
+	user := app.newUser(form)
 
 	validator := validator.New()
 	app.validateUser(user, form.Get("passwordconfirm"), validator)
@@ -136,14 +136,15 @@ func (app *App) signupPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *App) signupHandler(w http.ResponseWriter, r *http.Request) {
-	loginUser := app.models.user.NewUser(app.readFormDataHelper(r))
+func (app *App) signinHandler(w http.ResponseWriter, r *http.Request) {
+	var lastPage string
+	loginUser := app.newUser(app.readFormDataHelper(r))
 	templateData := templateData{"username": loginUser.Username, "password": ""}
 
 	user, err := app.models.user.Get(*loginUser)
 	if errors.Is(err, sql.ErrNoRows) {
 		templateData["errors"] = map[string][]string{"username": {"username not found"}}
-		tmpl := app.PageTemplates["signup"]
+		tmpl := app.PageTemplates.Get(SIGNINPAGE)
 		err := tmpl.Execute(w, templateData)
 		if err != nil {
 			app.error(err)
@@ -153,7 +154,7 @@ func (app *App) signupHandler(w http.ResponseWriter, r *http.Request) {
 
 	if same := helper.CompareHash(loginUser.Password, user.Password); !same {
 		templateData["errors"] = map[string][]string{"password": {"incorrect password"}}
-		tmpl := app.PageTemplates["signup"]
+		tmpl := app.PageTemplates.Get(SIGNINPAGE)
 		err := tmpl.Execute(w, templateData)
 		if err != nil {
 			app.error(err)
@@ -167,7 +168,10 @@ func (app *App) signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, HOMEPAGE, http.StatusMovedPermanently)
+	if lastPage = app.SessionManager.GetString(r.Context(), "lastpage"); lastPage == "" {
+		lastPage = HOMEPAGE
+	}
+	http.Redirect(w, r, lastPage, http.StatusMovedPermanently)
 }
 
 func (app *App) confirmEmailHandler(w http.ResponseWriter, r *http.Request) {
@@ -216,7 +220,7 @@ func (app *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
 		app.error(err)
 		return
 	}
-	app.SessionManager.Remove(r.Context(), "userId")
+	app.SessionManager.Clear(r.Context())
 	http.Redirect(w, r, HOMEPAGE, http.StatusMovedPermanently)
 }
 
@@ -230,10 +234,10 @@ func (app *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
 // 	}
 // }
 
-func (app *App) changeUserPasswordPageHandler(w http.ResponseWriter, r *http.Request) {
+func (app *App) securityPageHandler(w http.ResponseWriter, r *http.Request) {
 	user := app.getUserHelper(r)
 	data := app.newTemplateData(user)
-	tmpl := app.PageTemplates.Get(SECURITY)
+	tmpl := app.PageTemplates.Get(SECURITYPAGE)
 	tmpl.Execute(w, data)
 }
 
@@ -242,7 +246,7 @@ func (app *App) changeUserPasswordHandler(w http.ResponseWriter, r *http.Request
 	user := app.getUserHelper(r)
 	validator := validator.New()
 	data := app.newTemplateData(user)
-	tmpl := app.PageTemplates.Get(SECURITY)
+	tmpl := app.PageTemplates.Get(SECURITYPAGE)
 
 	app.validateChangeUserPasswordForm(form, validator)
 	if !validator.Valid() {
@@ -256,7 +260,20 @@ func (app *App) changeUserPasswordHandler(w http.ResponseWriter, r *http.Request
 		app.error(err)
 		return
 	}
+
+	request, err := app.newPasswordChangeRequest(user, form, token)
+	if err != nil {
+		app.error(err)
+		return
+	}
+
 	err = app.models.token.Insert(token)
+	if err != nil {
+		app.error(err)
+		return
+	}
+
+	err = app.models.request.Insert(request)
 	if err != nil {
 		app.error(err)
 		return
@@ -316,7 +333,7 @@ func (app *App) confirmPasswordChangeHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	http.Redirect(w, r, SECURITY, http.StatusMovedPermanently)
+	http.Redirect(w, r, sql.ErrNoRows.Error(), http.StatusMovedPermanently)
 
 }
 
@@ -336,5 +353,17 @@ func (app *App) fileServer() http.Handler {
 		server := http.FileServer(http.FS(ui.FILES))
 		server.ServeHTTP(w, r)
 	})
+}
 
+func (app *App) profilePageHandler(w http.ResponseWriter, r *http.Request) {
+	user := app.getUserHelper(r)
+	data := app.newTemplateData(user)
+
+	app.SessionManager.Put(r.Context(), "lastpage", PROFILEPAGE)
+
+	tmpl := app.PageTemplates.Get(PROFILEPAGE)
+	err := tmpl.Execute(w, data)
+	if err != nil {
+		app.error(err)
+	}
 }

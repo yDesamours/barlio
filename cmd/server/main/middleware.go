@@ -55,3 +55,14 @@ func (app *App) setNoCacheHeaderMiddleware(h http.Handler) http.Handler {
 		h.ServeHTTP(w, r)
 	})
 }
+
+func (app *App) requireLoginMiddleware(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := app.getUserHelper(r)
+		if user == nil {
+			http.Redirect(w, r, SIGNINPAGE, http.StatusMovedPermanently)
+			return
+		}
+		h.ServeHTTP(w, r)
+	})
+}

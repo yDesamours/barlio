@@ -17,19 +17,19 @@
 {{end}}
 
 {{define "nav"}}
-<div class="row px-5">
-    <div class="col-9 offset-2">
-        <nav class="nav nav-underline justify-content-between">
-            <a class="nav-link link-dark {{if eq .page `/`}}active{{end}} px-1" role="button" href="/">Home</a>
-            <a class="nav-link link-dark {{if eq .page `Stories`}}active{{end}} px-1" role="button">Stories</a>
-            <a class="nav-link link-dark{{if eq .page `Author`}}active{{end}} px-1" role="button">Author</a>
+<div class="row justify-content-end">
+    <div class="col-9">
+        <nav class="nav nav-underline justify-content-end">
+            <a class="mx-2 nav-link link-dark {{if eq .page `/`}}active{{end}} px-1" role="button" href="/">Home</a>
+            <a class="mx-2 nav-link link-dark {{if eq .page `Stories`}}active{{end}} px-1" role="button">Stories</a>
+            <a class="mx-2 nav-link link-dark{{if eq .page `Author`}}active{{end}} px-1" role="button">Author</a>
         </nav>
     </div>
-    <div class="col-1">
+    <div class=" w-auto">
         {{if .user}}
             {{template "user" .}}
         {{else}}
-            <a class="btn btn-primary rounded-pill" href="/signin">Sign In</a>
+            <a class="btn btn-primary rounded-pill" href="/signup">Sign In</a>
         {{end}}
     </div>
 </div>

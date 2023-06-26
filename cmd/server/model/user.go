@@ -4,7 +4,6 @@ import (
 	"barlio/internal/types"
 	"context"
 	"database/sql"
-	"net/url"
 	"time"
 
 	"github.com/lib/pq"
@@ -31,15 +30,6 @@ type UserModel struct {
 
 func (u *UserModel) SetDB(db *sql.DB) {
 	u.db = db
-}
-
-func (m *UserModel) NewUser(form url.Values) *User {
-	user := &User{
-		Username: types.String(form.Get("username")),
-		Email:    types.String(form.Get("email")),
-		Password: types.String(form.Get("password")),
-	}
-	return user
 }
 
 func (m *UserModel) Insert(u *User) error {

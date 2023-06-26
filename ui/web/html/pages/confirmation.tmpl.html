@@ -1,0 +1,14 @@
+{{define "confirmation"}}
+<div>
+    <h3>{{.context}}</h3>
+    <form method="POST" action="{{.endpoint}}">
+        <div>
+            <input type="password" value="" class="form-control" name="password" aria-describedby="passwordhelp" placeholder="enter your password here">
+            <span id="passwordhelp" class="visually-hidden">password confirmation</span>
+        </div>
+        <div>
+            <input type="text" value="{{.token}}" name="token" hidden> 
+        </div>
+    </form>
+</div>
+{{end}}
