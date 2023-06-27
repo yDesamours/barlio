@@ -224,21 +224,33 @@ func (app *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, HOMEPAGE, http.StatusMovedPermanently)
 }
 
-// func (app *App) updateUserHandler(w http.ResponseWriter, r *http.Request) {
-// 	form := app.readFormDataHelper(r)
-// 	user := app.getUserHelper(r)
+func (app *App) updateUserProfileHandler(w http.ResponseWriter, r *http.Request) {
+	form := app.readFormDataHelper(r)
+	user := app.getUserHelper(r)
+	tmpl := app.PageTemplates.Get(PROFILEPAGE)
 
-// 	err := app.models.user.UpdateUser(user)
-// 	if err != nil {
-// 		app.error(err)
-// 	}
-// }
+	app.updateUserProfile(user, form)
+
+	err := app.models.user.UpdateUser(user)
+	if err != nil {
+		app.error(err)
+	}
+
+	data := app.newTemplateData(user)
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		app.error(err)
+	}
+}
 
 func (app *App) securityPageHandler(w http.ResponseWriter, r *http.Request) {
 	user := app.getUserHelper(r)
 	data := app.newTemplateData(user)
 	tmpl := app.PageTemplates.Get(SECURITYPAGE)
-	tmpl.Execute(w, data)
+	err := tmpl.Execute(w, data)
+	if err != nil {
+		app.error(err)
+	}
 }
 
 func (app *App) changeUserPasswordHandler(w http.ResponseWriter, r *http.Request) {

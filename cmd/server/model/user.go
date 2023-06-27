@@ -135,7 +135,7 @@ func (m *UserModel) UpdateUser(user *User) error {
 	defer cancel()
 
 	_, err := m.db.ExecContext(ctx, statement, user.Firstname, user.Lastname, user.Birthdate,
-		user.Bio, pq.Array(user.PreferedArticleCategories))
+		user.Bio, pq.Array(user.PreferedArticleCategories), user.ID)
 
 	return err
 }

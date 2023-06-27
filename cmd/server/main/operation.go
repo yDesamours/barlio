@@ -86,7 +86,7 @@ func (app *App) newVerificationToken(user *model.User) (*model.Token, error) {
 	return &token, nil
 }
 
-func (app *App) updateUserProfilInfos(user *model.User, form url.Values) {
+func (app *App) updateUserProfile(user *model.User, form url.Values) {
 	user.Firstname = types.String(form.Get("firstname"))
 	user.Lastname = types.String(form.Get("lastname"))
 	user.Bio = types.String(form.Get("bio"))

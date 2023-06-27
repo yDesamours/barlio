@@ -36,6 +36,9 @@ func newRouter(app *App) http.Handler {
 	router.HandlerFunc(http.MethodGet, LOGOUTROUTE, app.logoutHandler)
 	router.Handler(http.MethodGet, ASSETSROUTE, app.fileServer())
 	router.Handler(http.MethodGet, PROFILEPAGE, requireAuthMiddleware.ThenFunc(app.profilePageHandler))
+	router.Handler(http.MethodPost, PROFILEPAGE, requireAuthMiddleware.ThenFunc(app.updateUserProfileHandler))
+	router.Handler(http.MethodGet, SECURITYPAGE, requireAuthMiddleware.ThenFunc(app.securityPageHandler))
+	router.Handler(http.MethodPost, SECURITYPAGE, requireAuthMiddleware.ThenFunc(app.changeUserPasswordHandler))
 
 	staticMiddlewares := alice.New(app.recoverMiddleware, app.SessionManager.LoadAndSave, app.getCurrentUserMiddleware)
 	staticMiddlewares.Append(app.setNoCacheHeaderMiddleware)

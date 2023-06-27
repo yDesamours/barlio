@@ -14,7 +14,7 @@
                 </form>
             </div>
             <div class="col-8 order-1 mr-3">
-                <form>
+                <form method="POST" action="/settings/profile">
                     <div class="mb-3">
                         <label class="form-label" for="firstname">Firstname</label>
                         <input type="text" name="firstname" id="firstname" class="form-control" value="{{.user.Firstname}}">
@@ -29,6 +29,11 @@
                         <label class="form-label" for="bio">bio</label>
                         <textarea class="form-control" name="bio" id="bio">{{.user.Bio}}</textarea>
                         <span class="form-text">Tell a bit about yourself</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="birthdate">Birthdate</label>
+                        <input class="form-control" type="date" name="birthdate" id="birthdate" value="{{.user.Birthdate}}">
                     </div>
 
                     <button class="btn btn-success" type="submit">Save</button>
