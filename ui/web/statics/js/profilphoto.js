@@ -1,10 +1,10 @@
-function previewPhoto(event) {
+let cropper = null;
+
+function cropPhoto(event) {
 const boxSize = 400;
     const input = event.target;
-    const preview = document.getElementById("photo_preview");
-    const cropImage = document.getElementById("photo_crop");
+    const cropImage = document.getElementById("crop");
     const myModal = new bootstrap.Modal(document.getElementById("modal"))
-    let cropper = null;
   
     if (input.files && input.files[0]) {
       const  reader = new FileReader();
@@ -12,9 +12,6 @@ const boxSize = 400;
       myModal.show()
 
       reader.onload = function(e) {
-        preview.src = e.target.result;
-        preview.style.display = "block";
-
         cropImage.src = e.target.result;
         cropImage.style.display = "block";
 
@@ -25,6 +22,8 @@ const boxSize = 400;
       cropper = new Cropper(cropImage, {
         aspectRatio: 1,
         viewMode: 1,    
+        background:false,
+        modal:false,
         maxCropBoxHeight : boxSize,
         maxCropBoxWidth : boxSize,
         minCropBoxWidth : boxSize,
@@ -33,10 +32,9 @@ const boxSize = 400;
           var croppedData = {
             x: event.detail.x,
             y: event.detail.y,
-            width: event.detail.width,
-            height: event.detail.height
+            width: boxSize,
+            height: boxSize
           };
-          console.log(croppedData);
         }
       });
     }
@@ -48,4 +46,11 @@ const boxSize = 400;
     cropImage.src = "#";
     cropImage.style.display = "none";
   }
+}
+
+function previewPhoto(){
+  const preview = document.getElementById("preview");
+  const croppedCanvas = cropper.getCroppedCanvas();
+  preview.style.backgroundImage = 'url('+croppedCanvas.toDataURL('image/jpeg')+')'
+  console.log(croppedCanvas)
 }

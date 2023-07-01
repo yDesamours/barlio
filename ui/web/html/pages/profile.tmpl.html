@@ -8,13 +8,12 @@
     <div class="col-6 pt-4">
         <div class="row">
             <div class="col-4 order-2">
-                <div id="photo_preview" class="rounded-circle border border-primary" style="width: 180px; height: 180px;" >
-                    <img alt="profil_picture" src="#" style="width: 100%; height: auto;">
+                <div id="preview" class="rounded-circle border border-primary" style="width: 180px; height: 180px;" >           
                 </div>
 
                 <form method="post" enctype="multipart/form-data" action="/userprofile">
                     <label for="profil_picture"><span class="btn btn-primary"><ion-icon name="camera-outline"></ion-icon></span></label>
-                    <input type="file" name="profil_picture" id="profil_picture" class="form-control" style="display:none;" onchange="previewPhoto(event)">
+                    <input type="file" name="profil_picture" id="profil_picture" class="form-control" style="display:none;" oninput="cropPhoto(event)">
                 </form>
             </div>
             <div class="col-8 order-1">
@@ -49,16 +48,18 @@
 <div class="modal fade" id="modal">
     <div class="modal-dialog modal-fullscreen">
         <div class="modal-content"> 
-            <div class="modal-header">
+            <div class="modal-header row justify-content-end">
                 <h1 class="modal-title fs-5">Crop image</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                <button class="btn btn-success">Save</button>
+                <div>
+                    <button class="btn btn-success btn-close" data-bs-dismiss="modal" onclick="previewPhoto()">Save</button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
             </div>
 
             <div class="modal-body">
                 <div class="row justify-content-center vh-100">
                     <div class="mb-3 col-6 align-self-center">
-                        <img id="photo_crop" src="#" alt="Photo de profil" style="max-width: 500px;">
+                        <img id="crop" src="#" alt="Photo de profil" style="max-width: 500px;">
                     </div>                   
                 </div>
             </div>
