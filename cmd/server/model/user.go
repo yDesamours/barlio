@@ -22,6 +22,7 @@ type User struct {
 	PreferedArticleCategories ListArticleCategorie
 	Bio                       types.String
 	ProfilPicture             types.String
+	SocialPlatforms           SocialPlatformList
 }
 
 type UserModel struct {
@@ -52,7 +53,7 @@ func (m *UserModel) Get(user User) (*User, error) {
 	var u User
 	const statement = `SELECT 
 							id, firstname, lastname, username,  password, email, joined_at,
-							isverified
+							isverified, bio, birthdate
 						FROM users
 						WHERE 
 							(id = $1 OR $1 = 0)
@@ -62,7 +63,7 @@ func (m *UserModel) Get(user User) (*User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 	err := m.db.QueryRowContext(ctx, statement, user.ID, user.Username, user.Email).Scan(&u.ID, &u.Firstname, &u.Lastname, &u.Username,
-		&u.Password, &u.Email, &u.JoinedAt, &u.IsVerified)
+		&u.Password, &u.Email, &u.JoinedAt, &u.IsVerified, &u.Bio, &u.Birthdate)
 
 	return &u, err
 }

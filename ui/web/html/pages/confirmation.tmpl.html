@@ -1,14 +1,25 @@
-{{define "confirmation"}}
-<div>
-    <h3>{{.context}}</h3>
-    <form method="POST" action="{{.endpoint}}">
-        <div>
-            <input type="password" value="" class="form-control" name="password" aria-describedby="passwordhelp" placeholder="enter your password here">
-            <span id="passwordhelp" class="visually-hidden">password confirmation</span>
+{{define "title"}}Confirm{{end}}
+
+{{define "main"}}
+<div class="row">
+    <div class="col-3">
+        <div class="mt-5 card">
+            <div class="card-body">
+                <h5 class="mb-3">Barlio</h5>
+                <p class="mb-3">{{.confirmtext}}</p>
+                <form method="POST" action="{{.action}}">
+                    <div class="mb-2">
+                        <input type="password" value="" class="form-control" name="password" aria-describedby="passwordhelp" placeholder="enter your password here">
+                        <span id="passwordhelp" class="visually-hidden">password confirmation</span>
+                    </div>
+                    <div>
+                        <input type="text" value="{{.token}}" name="token" hidden> 
+                    </div>
+                    <a class="btn btn-dark col-2" href="{{.lastpage}}">Cancel</a>
+                    <button class="btn btn-danger col-2" type="submit">Confirm</button>
+                </form>
+            </div>
         </div>
-        <div>
-            <input type="text" value="{{.token}}" name="token" hidden> 
-        </div>
-    </form>
+    </div>
 </div>
 {{end}}

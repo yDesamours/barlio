@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"io"
 	"io/fs"
+	"net/http"
 	"path/filepath"
 	"strings"
 	"time"
@@ -27,11 +28,16 @@ func (t templateMap) Get(tmpl string) *PageTemplate {
 	return t[tmpl]
 }
 
-func (app *App) newTemplateData(user *model.User) templateData {
+func formatDate(t time.Time) string {
+	return t.Format(time.DateOnly)
+}
+
+func (app *App) newTemplateData(user *model.User, r *http.Request) templateData {
 	return templateData{
 		"time":       time.Now(),
 		"showHeader": true,
 		"user":       user,
+		"page":       r.URL.Path,
 	}
 }
 
@@ -45,8 +51,11 @@ type PageTemplate struct {
 
 func appPage() (templateMap, error) {
 	templates := templateMap{}
+	funcMap := template.FuncMap{"formatdate": formatDate}
+
 	baseTemplate := template.Must(template.ParseFS(ui.FILES, "web/html/base.tmpl.html"))
 	baseTemplate = template.Must(baseTemplate.ParseFS(ui.FILES, "web/html/partials/*"))
+	baseTemplate = baseTemplate.Funcs(funcMap)
 
 	pages, err := fs.Glob(ui.FILES, "web/html/pages/*.tmpl.html")
 	if err != nil {

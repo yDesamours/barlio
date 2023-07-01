@@ -6,21 +6,21 @@
         {{template "nav_settings" .}}
     </div>
     <div class="col-6 pt-4">
-        <div class="row">
-            <h2>Your Password</h2>  
-                <div class="col-6"><p>auorehogognoe</p></div>
-                <div class="col-1 align-self-end"><button class="btn btn-info" type="button" data-bs-target="#changepassword" data-bs-toggle="collapse" aria-expanded="false" aria-controls="changepassword">Change</a></div>
+        <div class="row justify-content-between">
+            <h4>Your Password</h4>  
+            <div class="col-6"><p>auorehogognoe</p></div>
+            <div class="w-auto"><button class="btn btn-info" type="button" data-bs-target="#changepassword" data-bs-toggle="collapse" aria-expanded="false" aria-controls="changepassword">Change</a></div>
         </div>
 
-        <div class="row collapse" id="changepassword">
+        <div class="row collapse ml-1" id="changepassword">
             <div>
-                <h2>Change password</h2>
+                <h4>Change password</h4>
                 <form method="POST" action="/security">
                     <div class="mb-3 row">
                         <div class="col-3"> 
                             <label for="newpassword" class="form-label">New password</label>
                         </div>
-                        <div class="col-3">
+                        <div class="col-6">
                             <div class="row">
                                 <div class="col">
                                     <input type="password" class="form-control" value="" id="newpassword" aria-describedby="passwordhelp">
@@ -36,10 +36,9 @@
                                 {{end}}
                             </div>
                         </div>
-                        <div class="col-6">
+                        <div class="col-3">
                             <div class="row">
-                                <div class="form-text col" id="passwordhelp">Enter your new password</div>
-                                <div class="form-text col">at least 8 character</div>
+                                <div class="form-text">at least 8 character</div>
                             </div>
                         </div> 
                     </div>
@@ -48,7 +47,7 @@
                         <div class="col-3"> 
                             <label for="newpasswordconfirm" class="form-label">Confirm password</label>
                         </div>
-                        <div class="col-3">
+                        <div class="col-6">
                             <div class="row">
                                 <div class="col">
                                     <input type="password" class="form-control" value="" id="newpasswordconfirm" aria-describedby="passwordconfirmhelp">
@@ -64,10 +63,13 @@
                                 {{end}}
                             </div>
                         </div>
-                        <div class="col-6">
-                            <div class="row">
-                                <div class="form-text" id="passwordconfirmhelp">Confirm your new password</div>
-                            </div>
+                    </div>
+                    <div class="row justify-content-end">
+                        <div class="w-auto">
+                            <button class="btn btn-dark" type="button" data-bs-toggle="collaspe" data-bs-target="#changepassword">Cancel</button>
+                        </div>
+                        <div class="w-auto">
+                            <a class="btn btn-warning" role="button" href="#">Change</a>
                         </div>
                     </div>
                 </form>

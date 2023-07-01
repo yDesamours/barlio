@@ -8,8 +8,11 @@ import (
 	"barlio/internal/validator"
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 )
 
@@ -90,8 +93,31 @@ func (app *App) updateUserProfile(user *model.User, form url.Values) {
 	user.Firstname = types.String(form.Get("firstname"))
 	user.Lastname = types.String(form.Get("lastname"))
 	user.Bio = types.String(form.Get("bio"))
-	birthdate, _ := time.Parse(time.DateOnly, form.Get("birhtdate"))
+	birthdate, _ := time.Parse(time.DateOnly, form.Get("birthdate"))
+
 	user.Birthdate = birthdate
+}
+
+func (app *App) saveFile(filename string, content []byte) error {
+	return os.WriteFile(filename, content, os.ModePerm)
+}
+
+func (app *App) readMultipartFile(form *multipart.Form, filename string) ([]byte, error) {
+	headers := form.File[filename]
+	if len(headers) == 0 {
+		return nil, fmt.Errorf("no file submitted")
+	}
+
+	header := headers[0]
+	file, err := header.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	content := make([]byte, header.Size)
+	_, err = file.Read(content)
+	return content, nil
 }
 
 func (app *App) newPasswordChangeToken(user *model.User) (*model.Token, error) {

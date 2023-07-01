@@ -16,11 +16,9 @@ import (
 
 func (app *App) homePageHandler(w http.ResponseWriter, r *http.Request) {
 	user := app.getUserHelper(r)
-	data := app.newTemplateData(user)
+	data := app.newTemplateData(user, r)
 
-	data.Set("page", HOMEPAGE)
-
-	app.SessionManager.Put(r.Context(), "lastpage", HOMEPAGE)
+	app.setLastPageHelper(r)
 
 	tmpl := app.PageTemplates.Get(HOMEPAGE)
 	err := tmpl.Execute(w, data)
@@ -30,10 +28,8 @@ func (app *App) homePageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) signinPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := app.newTemplateData(nil)
+	data := app.newTemplateData(nil, r)
 	data.Set("showHeader", false)
-
-	app.SessionManager.Put(r.Context(), "lastpage", SIGNINPAGE)
 
 	tmpl := app.PageTemplates.Get(SIGNINPAGE)
 	err := tmpl.Execute(w, data)
@@ -44,7 +40,7 @@ func (app *App) signinPageHandler(w http.ResponseWriter, r *http.Request) {
 
 func (app *App) signupHandler(w http.ResponseWriter, r *http.Request) {
 	form := app.readFormDataHelper(r)
-	infos := app.newTemplateData(nil)
+	infos := app.newTemplateData(nil, r)
 
 	user := app.newUser(form)
 
@@ -83,7 +79,7 @@ func (app *App) signupHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) emailVerificationHandler(w http.ResponseWriter, r *http.Request) {
-	data := app.newTemplateData(nil)
+	data := app.newTemplateData(nil, r)
 	data.Set("showHeader", false)
 
 	user := app.getUserHelper(r)
@@ -123,8 +119,8 @@ func (app *App) emailVerificationHandler(w http.ResponseWriter, r *http.Request)
 }
 
 func (app *App) signupPageHandler(w http.ResponseWriter, r *http.Request) {
-	data := app.newTemplateData(nil)
-	data.Set("page", "Signup")
+	data := app.newTemplateData(nil, r)
+	app.setLastPageHelper(r)
 	data.Set("showHeader", false)
 
 	app.SessionManager.Put(r.Context(), "lastpage", SIGNUPPAGE)
@@ -212,7 +208,7 @@ func (app *App) confirmEmailHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
-	data := app.newTemplateData(nil)
+	data := app.newTemplateData(nil, r)
 	data.Set("page", HOMEPAGE)
 
 	err := app.SessionManager.RenewToken(r.Context())
@@ -236,7 +232,7 @@ func (app *App) updateUserProfileHandler(w http.ResponseWriter, r *http.Request)
 		app.error(err)
 	}
 
-	data := app.newTemplateData(user)
+	data := app.newTemplateData(user, r)
 	err = tmpl.Execute(w, data)
 	if err != nil {
 		app.error(err)
@@ -245,7 +241,7 @@ func (app *App) updateUserProfileHandler(w http.ResponseWriter, r *http.Request)
 
 func (app *App) securityPageHandler(w http.ResponseWriter, r *http.Request) {
 	user := app.getUserHelper(r)
-	data := app.newTemplateData(user)
+	data := app.newTemplateData(user, r)
 	tmpl := app.PageTemplates.Get(SECURITYPAGE)
 	err := tmpl.Execute(w, data)
 	if err != nil {
@@ -257,7 +253,7 @@ func (app *App) changeUserPasswordHandler(w http.ResponseWriter, r *http.Request
 	form := app.readFormDataHelper(r)
 	user := app.getUserHelper(r)
 	validator := validator.New()
-	data := app.newTemplateData(user)
+	data := app.newTemplateData(user, r)
 	tmpl := app.PageTemplates.Get(SECURITYPAGE)
 
 	app.validateChangeUserPasswordForm(form, validator)
@@ -345,7 +341,7 @@ func (app *App) confirmPasswordChangeHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	http.Redirect(w, r, sql.ErrNoRows.Error(), http.StatusMovedPermanently)
+	http.Redirect(w, r, SECURITYPAGE, http.StatusMovedPermanently)
 
 }
 
@@ -369,7 +365,17 @@ func (app *App) fileServer() http.Handler {
 
 func (app *App) profilePageHandler(w http.ResponseWriter, r *http.Request) {
 	user := app.getUserHelper(r)
-	data := app.newTemplateData(user)
+	data := app.newTemplateData(user, r)
+	links := []string{
+		"https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css",
+		"https://cdn.jsdelivr.net/npm/cropperjs@1.5.11/dist/cropper.min.css",
+	}
+	scripts := []string{
+		"/statics/js/profilphoto.js",
+		"https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js",
+	}
+	data.Set("scripts", scripts)
+	data.Set("links", links)
 
 	app.SessionManager.Put(r.Context(), "lastpage", PROFILEPAGE)
 
@@ -377,5 +383,26 @@ func (app *App) profilePageHandler(w http.ResponseWriter, r *http.Request) {
 	err := tmpl.Execute(w, data)
 	if err != nil {
 		app.error(err)
+	}
+}
+
+func (app *App) updateUserProfilePicture(w http.ResponseWriter, r *http.Request) {
+	user := app.getUserHelper(r)
+	form, err := app.readMultipartFormDataHelper(r)
+	if err != nil {
+		app.error(err)
+		return
+	}
+
+	file, err := app.readMultipartFile(form, "file")
+	if err != nil {
+		app.error(err)
+		return
+	}
+
+	err = app.saveFile(string(user.ProfilPicture), file)
+	if err != nil {
+		app.error(err)
+		return
 	}
 }
