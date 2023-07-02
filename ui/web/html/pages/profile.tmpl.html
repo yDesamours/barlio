@@ -8,13 +8,12 @@
     <div class="col-6 pt-4">
         <div class="row">
             <div class="col-4 order-2">
-                <div id="preview" class="rounded-circle border border-primary" style="width: 180px; height: 180px;" >           
+                <div class="position-relative" style="width: 180px; height: 180px;">
+                    <div  class="rounded-circle border border-primary position-relative" style="width: 100%; height: 100%; overflow: hidden;" >  
+                        <img id="preview" src="{{.profilPhoto}}" alt="profil_photo" style="position: absolute;"> 
+                    </div>
+                    <button class="btn btn-primary rounded-circle position-absolute end-0 bottom-0" style="width: 50px; height: 50px;" onclick="editPhoto()"><i class="bi bi-pencil-square"></i></button>
                 </div>
-
-                <form method="post" enctype="multipart/form-data" action="/userprofile">
-                    <label for="profil_picture"><span class="btn btn-primary"><ion-icon name="camera-outline"></ion-icon></span></label>
-                    <input type="file" name="profil_picture" id="profil_picture" class="form-control" style="display:none;" oninput="cropPhoto(event)">
-                </form>
             </div>
             <div class="col-8 order-1">
                 <form method="POST" action="/settings/profile">
@@ -45,22 +44,24 @@
         </div>
     </div>
 </div>
+
 <div class="modal fade" id="modal">
     <div class="modal-dialog modal-fullscreen">
         <div class="modal-content"> 
-            <div class="modal-header row justify-content-end">
-                <h1 class="modal-title fs-5">Crop image</h1>
+            <div class="modal-header justify-content-between">
+                <form method="post" enctype="multipart/form-data" action="/userprofile">
+                    <label for="profil_picture"><span class="btn btn-primary"><i class="bi bi-camera"></i></span></label>
+                    <input type="file" name="profil_picture" id="profil_picture" class="form-control" data-bs-dismiss="modal" style="display:none;" onchange="changePhoto(event)">
+                </form>
                 <div>
-                    <button class="btn btn-success btn-close" data-bs-dismiss="modal" onclick="previewPhoto()">Save</button>
+                    <button class="btn btn-success mr-3" data-bs-dismiss="modal" onclick="previewPhoto()">Save</button>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
 
             <div class="modal-body">
                 <div class="row justify-content-center vh-100">
-                    <div class="mb-3 col-6 align-self-center">
-                        <img id="crop" src="#" alt="Photo de profil" style="max-width: 500px;">
-                    </div>                   
+                    <img id="crop" src={{.profilPhoto}} alt="Photo de profil">                  
                 </div>
             </div>
         </div>

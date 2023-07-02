@@ -35,6 +35,7 @@ func newRouter(app *App) http.Handler {
 	router.Handler(http.MethodPut, EMAILCONFIRMROUTE, notLoggedInOnly.ThenFunc(app.confirmEmailHandler))
 	router.HandlerFunc(http.MethodGet, LOGOUTROUTE, app.logoutHandler)
 	router.Handler(http.MethodGet, ASSETSROUTE, app.fileServer())
+	router.Handler(http.MethodGet, "/docs/*path", app.docServer())
 	router.Handler(http.MethodGet, PROFILEPAGE, requireAuthMiddleware.ThenFunc(app.profilePageHandler))
 	router.Handler(http.MethodPost, PROFILEPAGE, requireAuthMiddleware.ThenFunc(app.updateUserProfileHandler))
 	router.Handler(http.MethodGet, SECURITYPAGE, requireAuthMiddleware.ThenFunc(app.securityPageHandler))

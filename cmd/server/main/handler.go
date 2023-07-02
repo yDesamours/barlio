@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"text/template"
 )
 
@@ -363,9 +364,19 @@ func (app *App) fileServer() http.Handler {
 	})
 }
 
+func (app *App) docServer() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		lastindex := strings.LastIndex(r.URL.Path, "/")
+		r.URL.Path = r.URL.Path[lastindex+1:]
+		server := http.FileServer(http.Dir("C:\\Users\\User\\code\\go\\src\\barlio\\docs"))
+		server.ServeHTTP(w, r)
+	})
+}
+
 func (app *App) profilePageHandler(w http.ResponseWriter, r *http.Request) {
 	user := app.getUserHelper(r)
 	data := app.newTemplateData(user, r)
+
 	links := []string{
 		"https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css",
 		"https://cdn.jsdelivr.net/npm/cropperjs@1.5.11/dist/cropper.min.css",
@@ -376,6 +387,7 @@ func (app *App) profilePageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data.Set("scripts", scripts)
 	data.Set("links", links)
+	data.Set("profilPhoto", "/docs/defaultavatar.jpg")
 
 	app.SessionManager.Put(r.Context(), "lastpage", PROFILEPAGE)
 
